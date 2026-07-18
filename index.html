@@ -53,7 +53,7 @@
 <span class="kicker">2027 Production Season</span>
 <h2 id="pageTitle">Command Center</h2>
 </div>
-<div class="top-actions">
+<div class="top-actions"><button class="primary" data-action="smart-brief">✦ Smart Brief</button>
 <button class="ghost" data-action="new-task">＋ New Task</button>
 <div class="profile"><div class="avatar">W</div><div><strong>William</strong><span>Administrator</span></div></div>
 </div>
@@ -124,6 +124,65 @@
 <div><span class="dot green"></span><p><b>Hyperion</b> uploaded the revised San Diego run of show.</p><time>Yesterday</time></div>
 </div>
 </section>
+</div>
+</section><section class="view" id="smart">
+<div class="smart-hero">
+<div>
+<span class="kicker">OATF Intelligence</span>
+<h2>Your executive brief for today.</h2>
+<p>The dashboard is analyzing readiness, deadlines, blockers, talent gaps, and outstanding fair-partner actions using the data already inside this workspace.</p>
+</div>
+<div class="smart-score-card">
+<span>Season readiness</span>
+<strong id="seasonReadiness">—</strong>
+<small id="seasonReadinessLabel">Calculating…</small>
+</div>
+</div>
+<div class="smart-grid">
+<article class="panel smart-focus">
+<div class="panel-head">
+<div><span class="kicker">Priority queue</span><h3>What needs attention</h3></div>
+<button class="ghost compact" id="refreshIntelligence">Recalculate</button>
+</div>
+<div class="smart-list" id="smartPriorityList"></div>
+</article>
+<article class="panel smart-actions-panel">
+<div class="panel-head">
+<div><span class="kicker">Recommended actions</span><h3>Best next moves</h3></div>
+</div>
+<div class="smart-list" id="smartActions"></div>
+</article>
+</div>
+<div class="smart-grid three">
+<article class="panel">
+<span class="kicker">Readiness by fair</span>
+<h3>Fair health</h3>
+<div class="fair-health-list" id="fairHealth"></div>
+</article>
+<article class="panel">
+<span class="kicker">Talent intelligence</span>
+<h3>Pipeline risks</h3>
+<div class="smart-mini-list" id="talentRisks"></div>
+</article>
+<article class="panel">
+<span class="kicker">Deadline intelligence</span>
+<h3>Upcoming pressure</h3>
+<div class="smart-mini-list" id="deadlinePressure"></div>
+</article>
+</div>
+<div class="smart-grid">
+<article class="panel">
+<div class="panel-head">
+<div><span class="kicker">Dependencies</span><h3>Blocked work map</h3></div>
+</div>
+<div class="dependency-map" id="dependencyMap"></div>
+</article>
+<article class="panel">
+<div class="panel-head">
+<div><span class="kicker">Weekly pulse</span><h3>Momentum</h3></div>
+</div>
+<div class="momentum-panel" id="momentumPanel"></div>
+</article>
 </div>
 </section>
 <section class="view" id="fairs">

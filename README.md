@@ -28,3 +28,20 @@ No external services are connected yet. Data is stored only in the browser using
 Use **Settings → Export JSON backup** before clearing browser data or switching devices.
 
 Open `index.html` locally or deploy the folder to GitHub Pages.
+
+
+## V0.02 — Smart Operations Layer
+
+- New Smart Brief executive view
+- Season-wide readiness score
+- Individual fair readiness scores
+- Automatic task risk scoring
+- Overdue and approaching deadline detection
+- Waiting/blocked task detection
+- Talent pipeline risk detection
+- Recommended next actions
+- Dependency mapping using “Blocked by”
+- Estimated remaining effort tracking
+- Weekly momentum dashboard
+- Automatic migration from V0.01 local data
+- Smart Brief shortcut in the top bar

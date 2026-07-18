@@ -1,7 +1,8 @@
 (() => {
   'use strict';
 
-  const STORAGE_KEY = 'oatf-admin-v001';
+  const STORAGE_KEY = 'oatf-admin-v002';
+  const LEGACY_STORAGE_KEY = 'oatf-admin-v001';
   const SESSION_KEY = 'oatf-admin-session';
 
   const seed = {
@@ -60,10 +61,38 @@
 
   function loadState() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || structuredClone(seed);
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+      const loaded = JSON.parse(stored || legacy || 'null') || structuredClone(seed);
+
+      loaded.tasks = (loaded.tasks || []).map(task => ({
+        impact: task.impact || inferImpact(task),
+        blockedBy: task.blockedBy || '',
+        linkedTalent: task.linkedTalent || '',
+        estimatedHours: Number(task.estimatedHours || 1),
+        ...task
+      }));
+
+      loaded.talent = (loaded.talent || []).map(item => ({
+        contractDue: item.contractDue || '',
+        materialsDue: item.materialsDue || '',
+        contactStatus: item.contactStatus || 'Active',
+        ...item
+      }));
+
+      loaded.deadlines = loaded.deadlines || [];
+      loaded.intelligenceDismissed = loaded.intelligenceDismissed || [];
+      return loaded;
     } catch {
       return structuredClone(seed);
     }
+  }
+
+  function inferImpact(task) {
+    const text = `${task.title || ''} ${task.description || ''}`.toLowerCase();
+    if (/contract|agreement|schedule|lineup|production|stage|credential|parking/.test(text)) return 'High';
+    if (/deck|branding|music|offer|review/.test(text)) return 'Medium';
+    return 'Low';
   }
 
   function saveState() {
@@ -93,7 +122,7 @@
   };
 
   const titles = {
-    overview:'Command Center', fairs:'Fair Workspaces', fairdetail:'Fair Workspace',
+    overview:'Command Center', smart:'Smart Brief', fairs:'Fair Workspaces', fairdetail:'Fair Workspace',
     tasks:'Task Board', talent:'Talent Pipeline', calendar:'Production Calendar',
     files:'Files & Assets', activity:'Activity Log', dayof:'Day-of Command'
   };
@@ -187,6 +216,11 @@
     const action = event.target.closest('[data-action]')?.dataset.action;
     if (!action) return;
 
+    if (action === 'smart-brief') {
+      showView('smart');
+      renderIntelligence();
+    }
+
     if (action === 'new-task') {
       openModal({
         title:'New task',
@@ -196,10 +230,14 @@
           field('owner','Owner','select',['William','Spencer','Fair Partner']),
           field('due','Due date'),
           field('priority','Priority','select',['High','Medium','Low']),
+          field('impact','Operational impact','select',['High','Medium','Low']),
+          field('estimatedHours','Estimated hours','number'),
+          field('blockedBy','Blocked by'),
+          field('linkedTalent','Linked talent'),
           field('description','Description','textarea')
         ].join(''),
         submit:data => {
-          state.tasks.push({...data,id:nextId(state.tasks),status:'todo'});
+          state.tasks.push({...data,id:nextId(state.tasks),status:'todo',estimatedHours:Number(data.estimatedHours || 1)});
           logActivity('William', `created task “${data.title}.”`, `${data.fair} · Tasks`);
           saveState(); notify('Task created');
         }
@@ -634,6 +672,352 @@
     };
   }
 
+
+
+  // ---------- OATF Intelligence ----------
+  function parseDueDate(value) {
+    if (!value) return null;
+    const now = new Date();
+    const lower = String(value).toLowerCase().trim();
+
+    if (lower === 'today') return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (lower === 'tomorrow') return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+
+    const monthDay = new Date(`${value}, ${now.getFullYear()}`);
+    if (!Number.isNaN(monthDay.getTime())) return monthDay;
+
+    return null;
+  }
+
+  function daysUntil(date) {
+    if (!date) return null;
+    const today = new Date();
+    const a = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const b = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return Math.round((b - a) / 86400000);
+  }
+
+  function taskRiskScore(task) {
+    let score = 0;
+    const due = parseDueDate(task.due);
+    const days = daysUntil(due);
+
+    if (task.status === 'waiting') score += 35;
+    if (task.status === 'todo') score += 15;
+    if (task.status === 'progress') score += 8;
+    if (task.priority === 'High') score += 25;
+    if (task.impact === 'High') score += 20;
+    if (task.blockedBy) score += 18;
+    if (days !== null && days < 0 && task.status !== 'complete') score += 40;
+    else if (days !== null && days <= 2 && task.status !== 'complete') score += 25;
+    else if (days !== null && days <= 7 && task.status !== 'complete') score += 12;
+
+    return Math.min(100, score);
+  }
+
+  function fairReadiness(fair) {
+    const tasks = state.tasks.filter(task => task.fair === fair.short);
+    const talent = state.talent.filter(item => item.fair === fair.short);
+    const deadlines = state.deadlines.filter(item => item.fair === fair.short || item.fair === fair.name);
+    const files = state.files.filter(item => item.fair === fair.short || item.fair === 'All fairs');
+
+    const taskBase = tasks.length
+      ? tasks.reduce((sum, task) => sum + ({complete:100,progress:65,waiting:30,todo:20}[task.status] || 0), 0) / tasks.length
+      : fair.progress || 0;
+
+    const talentBase = talent.length
+      ? talent.reduce((sum, item) => sum + ({Ready:100,Contracted:85,Offered:60,Reviewing:35,Submitted:15}[item.status] || 10), 0) / talent.length
+      : 35;
+
+    const fileScore = Math.min(100, files.length * 18);
+    const deadlinePenalty = deadlines.filter(d => {
+      const days = daysUntil(new Date(d.date));
+      return days !== null && days < 0;
+    }).length * 12;
+
+    const waitingPenalty = tasks.filter(t => t.status === 'waiting').length * 6;
+    return Math.max(0, Math.min(100, Math.round(taskBase * .5 + talentBase * .3 + fileScore * .2 - deadlinePenalty - waitingPenalty)));
+  }
+
+  function seasonReadiness() {
+    if (!state.fairs.length) return 0;
+    return Math.round(state.fairs.reduce((sum, fair) => sum + fairReadiness(fair), 0) / state.fairs.length);
+  }
+
+  function intelligenceItems() {
+    const items = [];
+
+    state.tasks.forEach(task => {
+      if (task.status === 'complete') return;
+      const risk = taskRiskScore(task);
+      const due = parseDueDate(task.due);
+      const days = daysUntil(due);
+
+      if (risk >= 55) {
+        const reason = task.status === 'waiting'
+          ? 'Waiting on another person or department'
+          : days !== null && days < 0
+            ? `${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} overdue`
+            : task.blockedBy
+              ? `Blocked by ${task.blockedBy}`
+              : 'High-impact work approaching its deadline';
+
+        items.push({
+          kind:'task',
+          severity:risk >= 80 ? 'critical' : 'warning',
+          score:risk,
+          title:task.title,
+          meta:`${task.fair} · ${task.owner}`,
+          reason,
+          action:'Open task board',
+          view:'tasks'
+        });
+      }
+    });
+
+    state.talent.forEach(item => {
+      if (item.status === 'Contracted' && item.music !== 'Received') {
+        items.push({
+          kind:'talent',
+          severity:'warning',
+          score:64,
+          title:`${item.name} is contracted but materials are incomplete`,
+          meta:`${item.fair} · ${item.music}`,
+          reason:'Contracted talent should move into readiness and production follow-up.',
+          action:'Open talent pipeline',
+          view:'talent'
+        });
+      }
+
+      if (item.status === 'Offered' && item.music === 'Pending') {
+        items.push({
+          kind:'talent',
+          severity:'watch',
+          score:48,
+          title:`Follow up with ${item.name}`,
+          meta:`${item.fair} · Offer pending`,
+          reason:'Offer and music materials are both still open.',
+          action:'Open talent pipeline',
+          view:'talent'
+        });
+      }
+    });
+
+    state.deadlines.forEach(deadline => {
+      const days = daysUntil(new Date(deadline.date));
+      if (days !== null && days <= 7) {
+        items.push({
+          kind:'deadline',
+          severity:days < 0 ? 'critical' : days <= 2 ? 'warning' : 'watch',
+          score:days < 0 ? 90 : days <= 2 ? 70 : 45,
+          title:deadline.title,
+          meta:`${deadline.fair} · ${days < 0 ? `${Math.abs(days)} days overdue` : `${days} days away`}`,
+          reason:days < 0 ? 'This deadline has passed.' : 'This deadline is approaching quickly.',
+          action:'Open calendar',
+          view:'calendar'
+        });
+      }
+    });
+
+    return items
+      .filter(item => !state.intelligenceDismissed.includes(`${item.kind}:${item.title}`))
+      .sort((a,b) => b.score - a.score);
+  }
+
+  function recommendedActions() {
+    const actions = [];
+    const risky = intelligenceItems();
+
+    const waitingByFair = state.fairs.map(fair => ({
+      fair,
+      count: state.tasks.filter(task => task.fair === fair.short && task.status === 'waiting').length
+    })).sort((a,b) => b.count - a.count);
+
+    if (waitingByFair[0]?.count > 0) {
+      actions.push({
+        title:`Clear ${waitingByFair[0].count} waiting item${waitingByFair[0].count === 1 ? '' : 's'} for ${waitingByFair[0].fair.short}`,
+        text:'Consolidate outstanding fair-partner questions into one follow-up instead of sending separate messages.',
+        view:'tasks',
+        tone:'warning'
+      });
+    }
+
+    const offeredTalent = state.talent.filter(item => item.status === 'Offered');
+    if (offeredTalent.length) {
+      actions.push({
+        title:`Close ${offeredTalent.length} outstanding talent offer${offeredTalent.length === 1 ? '' : 's'}`,
+        text:'Resolve offers before schedule design and production deadlines become compressed.',
+        view:'talent',
+        tone:'pink'
+      });
+    }
+
+    const noFiles = state.fairs.filter(fair => !state.files.some(file => file.fair === fair.short));
+    if (noFiles.length) {
+      actions.push({
+        title:`Build the file set for ${noFiles[0].short}`,
+        text:'That workspace currently has no fair-specific files recorded.',
+        view:'files',
+        tone:'cyan'
+      });
+    }
+
+    const highTodo = state.tasks
+      .filter(task => task.status === 'todo' && (task.priority === 'High' || task.impact === 'High'))
+      .sort((a,b) => taskRiskScore(b) - taskRiskScore(a))[0];
+
+    if (highTodo) {
+      actions.push({
+        title:`Start “${highTodo.title}”`,
+        text:`This is the highest-impact unstarted task in ${highTodo.fair}.`,
+        view:'tasks',
+        tone:'critical'
+      });
+    }
+
+    if (!actions.length && !risky.length) {
+      actions.push({
+        title:'The season is in a healthy position',
+        text:'No major blockers are currently detected. Focus on moving in-progress work to complete.',
+        view:'overview',
+        tone:'green'
+      });
+    }
+
+    return actions.slice(0,5);
+  }
+
+  function renderIntelligence() {
+    const score = seasonReadiness();
+    const scoreEl = document.getElementById('seasonReadiness');
+    const labelEl = document.getElementById('seasonReadinessLabel');
+    if (scoreEl) scoreEl.textContent = `${score}%`;
+    if (labelEl) {
+      labelEl.textContent = score >= 80 ? 'Season is in strong shape'
+        : score >= 65 ? 'Healthy, with a few pressure points'
+        : score >= 45 ? 'Needs active management'
+        : 'Major operational attention needed';
+    }
+
+    const priorityList = document.getElementById('smartPriorityList');
+    const items = intelligenceItems().slice(0,8);
+    if (priorityList) {
+      priorityList.innerHTML = items.length
+        ? items.map(item => `<article class="smart-item ${item.severity}">
+            <div class="smart-item-icon">${item.kind === 'task' ? '✓' : item.kind === 'talent' ? '★' : '◷'}</div>
+            <div>
+              <span>${escapeHTML(item.meta)}</span>
+              <h4>${escapeHTML(item.title)}</h4>
+              <p>${escapeHTML(item.reason)}</p>
+            </div>
+            <div class="smart-item-actions">
+              <button data-smart-view="${item.view}">${escapeHTML(item.action)}</button>
+              <button class="dismiss-smart" data-smart-dismiss="${escapeHTML(item.kind)}:${escapeHTML(item.title)}" aria-label="Dismiss">×</button>
+            </div>
+          </article>`).join('')
+        : `<div class="smart-empty"><b>No urgent issues detected.</b><span>The current workload is within a healthy range.</span></div>`;
+    }
+
+    const actionPanel = document.getElementById('smartActions');
+    if (actionPanel) {
+      actionPanel.innerHTML = recommendedActions().map(action => `<button class="recommendation ${action.tone}" data-smart-view="${action.view}">
+        <span>Recommended</span>
+        <b>${escapeHTML(action.title)}</b>
+        <small>${escapeHTML(action.text)}</small>
+      </button>`).join('');
+    }
+
+    const fairHealth = document.getElementById('fairHealth');
+    if (fairHealth) {
+      fairHealth.innerHTML = state.fairs.map(fair => {
+        const readiness = fairReadiness(fair);
+        const riskCount = state.tasks.filter(task => task.fair === fair.short && taskRiskScore(task) >= 55 && task.status !== 'complete').length;
+        return `<button class="fair-health-row" data-open-fair="${escapeHTML(fair.name)}">
+          <div><b>${escapeHTML(fair.short)}</b><span>${riskCount} risk${riskCount === 1 ? '' : 's'} detected</span></div>
+          <div class="health-meter"><i style="width:${readiness}%"></i></div>
+          <strong>${readiness}%</strong>
+        </button>`;
+      }).join('');
+    }
+
+    const talentRisks = document.getElementById('talentRisks');
+    if (talentRisks) {
+      const talentItems = intelligenceItems().filter(item => item.kind === 'talent').slice(0,5);
+      talentRisks.innerHTML = talentItems.length
+        ? talentItems.map(item => `<button data-smart-view="talent"><b>${escapeHTML(item.title)}</b><span>${escapeHTML(item.meta)}</span></button>`).join('')
+        : `<div class="smart-empty small"><b>Talent pipeline is healthy.</b></div>`;
+    }
+
+    const deadlinePressure = document.getElementById('deadlinePressure');
+    if (deadlinePressure) {
+      const upcoming = state.deadlines
+        .map(d => ({...d, days:daysUntil(new Date(d.date))}))
+        .filter(d => d.days !== null)
+        .sort((a,b) => a.days - b.days)
+        .slice(0,5);
+
+      deadlinePressure.innerHTML = upcoming.length
+        ? upcoming.map(item => `<button data-smart-view="calendar"><b>${escapeHTML(item.title)}</b><span>${escapeHTML(item.fair)} · ${item.days < 0 ? `${Math.abs(item.days)} days overdue` : `${item.days} days`}</span></button>`).join('')
+        : `<div class="smart-empty small"><b>No deadlines recorded.</b></div>`;
+    }
+
+    renderDependencies();
+    renderMomentum();
+  }
+
+  function renderDependencies() {
+    const map = document.getElementById('dependencyMap');
+    if (!map) return;
+
+    const blocked = state.tasks.filter(task => task.blockedBy && task.status !== 'complete');
+    map.innerHTML = blocked.length
+      ? blocked.map(task => `<div class="dependency-row">
+          <div><span>${escapeHTML(task.fair)}</span><b>${escapeHTML(task.title)}</b></div>
+          <i>→</i>
+          <div class="blocked-by"><span>Blocked by</span><b>${escapeHTML(task.blockedBy)}</b></div>
+        </div>`).join('')
+      : `<div class="smart-empty"><b>No explicit task dependencies yet.</b><span>Add “Blocked by” when creating tasks to map cross-team dependencies here.</span></div>`;
+  }
+
+  function renderMomentum() {
+    const panel = document.getElementById('momentumPanel');
+    if (!panel) return;
+
+    const complete = state.tasks.filter(t => t.status === 'complete').length;
+    const progress = state.tasks.filter(t => t.status === 'progress').length;
+    const waiting = state.tasks.filter(t => t.status === 'waiting').length;
+    const activeHours = state.tasks.filter(t => t.status !== 'complete').reduce((sum,t) => sum + Number(t.estimatedHours || 1), 0);
+
+    panel.innerHTML = `
+      <div class="momentum-score"><strong>${complete}</strong><span>completed tasks</span></div>
+      <div class="momentum-bars">
+        <div><span>In progress</span><i><b style="width:${Math.min(100,progress*18)}%"></b></i><em>${progress}</em></div>
+        <div><span>Waiting</span><i><b style="width:${Math.min(100,waiting*22)}%"></b></i><em>${waiting}</em></div>
+        <div><span>Estimated remaining effort</span><i><b style="width:${Math.min(100,activeHours*3)}%"></b></i><em>${activeHours}h</em></div>
+      </div>`;
+  }
+
+  document.getElementById('refreshIntelligence')?.addEventListener('click', () => {
+    renderIntelligence();
+    notify('Smart Brief recalculated');
+  });
+
+  document.addEventListener('click', event => {
+    const view = event.target.closest('[data-smart-view]')?.dataset.smartView;
+    if (view) showView(view);
+
+    const dismiss = event.target.closest('[data-smart-dismiss]')?.dataset.smartDismiss;
+    if (dismiss) {
+      state.intelligenceDismissed.push(dismiss);
+      saveState();
+      renderIntelligence();
+    }
+  });
+
+
   // ---------- Helpers ----------
   function localISO(date) {
     const y = date.getFullYear();
@@ -666,6 +1050,7 @@
     renderNotes();
     renderIssues();
     refreshMetrics();
+    renderIntelligence();
   }
 
   // Auto-enter after the first demo login during the tab session.
