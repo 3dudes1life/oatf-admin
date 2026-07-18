@@ -8,7 +8,7 @@
   const $$ = selector => [...document.querySelectorAll(selector)];
   const todayISO = () => new Date().toISOString().slice(0,10);
 
-  let selectedLoginUser = Store.state.currentUser || 'Spencer';
+  let selectedLoginUser = 'Production';
   let currentView = Store.state.preferences.lastView || 'today';
   let currentDrawer = null;
   let currentDrawerTab = 'overview';
@@ -22,6 +22,8 @@
   let taskOwnerFilter = 'All';
   let taskFairFilter = 'All';
   let fileFairFilter = 'All';
+  let scheduleFairId = Store.state.preferences.scheduleFairId || Intel.nextFair()?.id || Store.state.fairs[0]?.id || '';
+  let scheduleMode = Store.state.preferences.scheduleMode || 'internal';
   let searchSelection = 0;
   let keyboardChord = '';
   let keyboardChordTimer = null;
@@ -41,7 +43,7 @@
   function entityName(type,id){ const item=Store.get(type,id); return item ? UI.recordTitle(type,item) : ''; }
 
   function enterBoard(){
-    Store.setCurrentUser(selectedLoginUser);
+    Store.setCurrentUser('Production');
     $('#loginScreen').classList.add('hidden');
     $('#appShell').classList.remove('hidden');
     sessionStorage.setItem(Store.SESSION_KEY,'1');
@@ -77,6 +79,7 @@
     renderFollowUps();
     renderTasks();
     renderCalendar();
+    renderSchedule();
     renderFiles();
     renderActivity();
     renderDayOf();
@@ -86,13 +89,13 @@
   }
 
   function renderUser(){
-    const user=Store.state.currentUser;
-    $('#sidebarUserName').textContent=user;
-    $('#sidebarAvatar').textContent=user[0];
-    $('#sidebarAvatar').classList.toggle('william',user==='William');
-    $('#topAvatar').textContent=user[0];
-    $('#topAvatar').classList.toggle('william',user==='William');
-    $$('.login-user').forEach(btn => btn.classList.toggle('active',btn.dataset.loginUser===selectedLoginUser));
+    Store.state.currentUser='Production';
+    $('#sidebarUserName').textContent='Production';
+    $('#sidebarAvatar').textContent='P';
+    $('#sidebarAvatar').classList.remove('william');
+    $('#topAvatar').textContent='P';
+    $('#topAvatar').classList.remove('william');
+    $$('.login-user').forEach(btn => btn.classList.toggle('active',btn.dataset.loginUser==='Production'));
     $('#sidebar').classList.toggle('collapsed',Boolean(Store.state.preferences.sidebarCollapsed));
   }
 
@@ -114,71 +117,37 @@
   }
 
   function renderToday(){
-    const user=Store.state.currentUser;
-    const priorities=Intel.dueTasks(user).slice(0,6);
-    const critical=priorities.filter(t=>t.risk>=65).length;
-    const waiting=Store.state.tasks.filter(t=>t.owner===user&&t.status==='waiting').length;
-    const complete=Intel.completedThisWeek(user).length;
-    const next=Intel.nextFair();
+    const priorities=Intel.dueTasks('Production').slice(0,7);
+    const critical=Intel.productionActions().filter(x=>x.severity==='critical').length;
+    const waiting=Store.state.tasks.filter(t=>t.status==='waiting').length;
+    const complete=Intel.completedThisWeek('Production').length;
+    const next=Intel.nextFair(); const readiness=next?Intel.fairReadiness(next):0;
+    const scheduleWarnings=next?Intel.scheduleIssues(next.id).filter(x=>x.severity!=='info').length:0;
     const follow=Intel.followUps().slice(0,5);
     const recent=Store.state.recentViewed.map(x=>({...x,item:Store.get(x.type,x.id)})).filter(x=>x.item).slice(0,4);
     const activity=Store.state.activity.slice(0,5);
-    const readiness=next ? Intel.fairReadiness(next) : 0;
-
     $('#todayContent').innerHTML=`
       <div class="today-hero">
-        <section class="greeting-card">
-          <span class="eyebrow">${Intel.greeting()}</span>
-          <h1>${UI.esc(user)}.</h1>
-          <p>${critical ? `There ${critical===1?'is':'are'} ${critical} high-pressure item${critical===1?'':'s'} worth handling first.` : 'The production board is calm. Keep the current work moving forward.'}</p>
-          <div class="today-counts">
-            <span class="critical"><b>${critical}</b> critical</span>
-            <span class="waiting"><b>${waiting}</b> waiting</span>
-            <span class="complete"><b>${complete}</b> completed this week</span>
-            <span><b>${Intel.seasonReadiness()}%</b> season readiness</span>
-          </div>
-        </section>
-        ${next ? `<button class="next-fair-card" data-open-record="fair:${next.id}">
-          <div><span class="eyebrow">Next fair</span><h3>${UI.esc(next.name)}</h3><p>${UI.esc(next.venue)} · ${UI.esc(Intel.formatDate(next.date))}</p></div>
-          <div><div class="countdown"><strong>${Math.max(0,next.days ?? 0)}</strong><span>days away</span></div><div class="readiness-line"><div><span>Production readiness</span><b>${readiness}%</b></div><div class="meter"><i style="width:${readiness}%"></i></div></div></div>
-        </button>` : ''}
+        <section class="greeting-card"><span class="eyebrow">${Intel.greeting()}</span><h1>Production.</h1><p>${critical?`${critical} production exception${critical===1?' needs':'s need'} attention before routine work.`:'The shared Production Board is calm and ready to move.'}</p><div class="today-counts"><span class="critical"><b>${critical}</b> exceptions</span><span class="waiting"><b>${waiting}</b> waiting</span><span class="complete"><b>${complete}</b> completed this week</span><span><b>${Intel.seasonReadiness()}%</b> season readiness</span></div></section>
+        ${next?`<button class="next-fair-card" data-open-record="fair:${next.id}"><div><span class="eyebrow">Next fair</span><h3>${UI.esc(next.name)}</h3><p>${UI.esc(next.venue)} · ${UI.esc(Intel.formatDate(next.date))}</p></div><div><div class="countdown"><strong>${Math.max(0,next.days??0)}</strong><span>days away</span></div><div class="readiness-line"><div><span>Production readiness</span><b>${readiness}%</b></div><div class="meter"><i style="width:${readiness}%"></i></div></div><small class="schedule-health-note">${scheduleWarnings} active schedule warning${scheduleWarnings===1?'':'s'}</small></div></button>`:''}
       </div>
-      <div class="today-grid">
-        <section class="panel">
-          <div class="panel-head"><div><span class="eyebrow">Focus</span><h3>Today’s priorities</h3><p>Highest-impact work assigned to ${UI.esc(user)}.</p></div><button class="text-button" data-view="mywork">View all →</button></div>
-          <div class="priority-list">${priorities.length ? priorities.map(task => `<div class="priority-row"><button class="check-button" data-complete-task="${task.id}" aria-label="Complete task">✓</button><button style="display:block;border:0;background:transparent;color:inherit;text-align:left;padding:0" data-open-record="task:${task.id}"><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short || 'No fair')} · ${UI.esc(task.blockedBy ? `Blocked by ${task.blockedBy}` : task.description || 'Production task')}</small></button><em>${UI.esc(Intel.relativeDate(task.due))}</em></div>`).join('') : empty('Nothing urgent','Your current work is caught up.')}</div>
-        </section>
-        <section class="panel">
-          <div class="panel-head"><div><span class="eyebrow">Continue</span><h3>Pick up where you left off</h3></div></div>
-          <div class="continue-list">${recent.length ? recent.map(entry => `<button class="continue-row" data-open-record="${entry.type}:${entry.id}"><span class="record-icon">${UI.icon(entry.type)}</span><span><b>${UI.esc(UI.recordTitle(entry.type,entry.item))}</b><small>${UI.esc(UI.recordSubtitle(entry.type,entry.item))}</small></span><span>›</span></button>`).join('') : empty('Nothing viewed yet','Open a fair or performer and it will stay within reach.')}</div>
-        </section>
-      </div>
-      <div class="today-grid three">
-        <section class="panel"><div class="panel-head"><div><span class="eyebrow">Waiting</span><h3>Follow-up queue</h3></div><button class="text-button" data-view="followups">Open center →</button></div><div class="followup-list">${follow.length ? follow.map(item => `<button class="followup-row" data-open-record="${item.kind}:${item.id}"><span class="priority-dot ${item.due<0?'critical':''}"></span><span><b>${UI.esc(item.name)}</b><small>${UI.esc(item.reason)}</small></span><em>${UI.esc(item.date ? Intel.relativeDate(item.date) : 'Follow up')}</em></button>`).join('') : empty('No follow-ups due','No one is currently waiting for outreach.')}</div></section>
-        <section class="panel"><div class="panel-head"><div><span class="eyebrow">Fair health</span><h3>Readiness</h3></div></div><div class="continue-list">${Store.state.fairs.map(item => {const score=Intel.fairReadiness(item);return `<button class="continue-row" data-open-record="fair:${item.id}"><span class="record-icon">${item.code}</span><span><b>${UI.esc(item.short)}</b><small>${UI.esc(Intel.fairStatus(item).label)}</small><div class="meter" style="margin-top:6px"><i style="width:${score}%"></i></div></span><span>${score}%</span></button>`}).join('')}</div></section>
-        <section class="panel"><div class="panel-head"><div><span class="eyebrow">Recent changes</span><h3>Activity</h3></div><button class="text-button" data-view="activity">Full log →</button></div><div class="recent-activity-list">${activity.map(activityRow).join('')}</div></section>
-      </div>`;
+      <div class="today-grid"><section class="panel"><div class="panel-head"><div><span class="eyebrow">Focus</span><h3>Production priorities</h3><p>Highest-impact work across the shared board.</p></div><button class="text-button" data-view="mywork">Open Action Board →</button></div><div class="priority-list">${priorities.length?priorities.map(task=>`<div class="priority-row"><button class="check-button" data-complete-task="${task.id}">✓</button><button style="display:block;border:0;background:transparent;color:inherit;text-align:left;padding:0" data-open-record="task:${task.id}"><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short||'No fair')} · ${UI.esc(task.blockedBy?`Blocked by ${task.blockedBy}`:task.description||'Production task')}</small></button><em>${UI.esc(Intel.relativeDate(task.due))}</em></div>`).join(''):empty('Nothing urgent','The production queue is caught up.')}</div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">Continue</span><h3>Pick up where Production left off</h3></div></div><div class="continue-list">${recent.length?recent.map(entry=>`<button class="continue-row" data-open-record="${entry.type}:${entry.id}"><span class="record-icon">${UI.icon(entry.type)}</span><span><b>${UI.esc(UI.recordTitle(entry.type,entry.item))}</b><small>${UI.esc(UI.recordSubtitle(entry.type,entry.item))}</small></span><span>›</span></button>`).join(''):empty('Nothing viewed yet','Opened records will stay within reach.')}</div></section></div>
+      <div class="today-grid three"><section class="panel"><div class="panel-head"><div><span class="eyebrow">Waiting</span><h3>Follow-up queue</h3></div><button class="text-button" data-view="followups">Open center →</button></div><div class="followup-list">${follow.length?follow.map(item=>`<button class="followup-row" data-open-record="${item.kind}:${item.id}"><span class="priority-dot ${item.due<0?'critical':''}"></span><span><b>${UI.esc(item.name)}</b><small>${UI.esc(item.reason)}</small></span><em>${UI.esc(item.date?Intel.relativeDate(item.date):'Follow up')}</em></button>`).join(''):empty('No follow-ups due','No outreach is currently overdue.')}</div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">Fair health</span><h3>Readiness</h3></div></div><div class="continue-list">${Store.state.fairs.map(item=>{const score=Intel.fairReadiness(item);return `<button class="continue-row" data-open-record="fair:${item.id}"><span class="record-icon">${item.code}</span><span><b>${UI.esc(item.short)}</b><small>${UI.esc(Intel.fairStatus(item).label)} · ROS ${Intel.scheduleReadiness(item.id)}%</small><div class="meter" style="margin-top:6px"><i style="width:${score}%"></i></div></span><span>${score}%</span></button>`}).join('')}</div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">Recent changes</span><h3>Activity</h3></div><button class="text-button" data-view="activity">Full log →</button></div><div class="recent-activity-list">${activity.map(activityRow).join('')}</div></section></div>`;
   }
 
   function empty(title,message){ return `<div class="empty-state"><div><b>${UI.esc(title)}</b><p>${UI.esc(message)}</p></div></div>`; }
   function activityRow(a){ return `<div class="activity-item"><i></i><div><b>${UI.esc(a.actor)}</b><p>${UI.esc(a.action)}</p></div><time>${UI.esc(Intel.formatTimeAgo(a.timestamp))}</time></div>`; }
 
   function renderMyWork(){
-    const user=Store.state.currentUser;
-    const tasks=Store.state.tasks.filter(t=>t.owner===user);
-    const assigned=tasks.filter(t=>t.status!=='complete').sort((a,b)=>Intel.taskRisk(b)-Intel.taskRisk(a));
-    const dueToday=assigned.filter(t=>Intel.daysUntil(t.due)<=0);
-    const waiting=assigned.filter(t=>t.status==='waiting');
-    const completed=tasks.filter(t=>t.status==='complete').sort((a,b)=>new Date(b.completedAt||b.updatedAt)-new Date(a.completedAt||a.updatedAt)).slice(0,8);
-    const hours=assigned.reduce((sum,t)=>sum+Number(t.estimatedHours||1),0);
-    $('#myWorkContent').innerHTML=`
-      <section class="work-hero"><div><span class="eyebrow">Personal workspace</span><h1>${UI.esc(user)}’s work.</h1><p>Only the production work assigned to you, organized by what needs movement.</p></div><div class="work-stats"><div class="work-stat"><strong>${assigned.length}</strong><span>open tasks</span></div><div class="work-stat"><strong>${waiting.length}</strong><span>waiting</span></div><div class="work-stat"><strong>${hours}h</strong><span>estimated effort</span></div></div></section>
-      <div class="work-sections">
-        ${workPanel('Due now',dueToday,'No work due now','Your immediate queue is clear.')}
-        ${workPanel('Assigned to me',assigned.slice(0,10),'No assigned work','New assignments will appear here.')}
-        ${workPanel('Waiting on someone',waiting,'Nothing waiting','No outside blockers are recorded.')}
-        <section class="panel"><div class="panel-head"><div><span class="eyebrow">Done</span><h3>Recently finished</h3></div></div><div class="work-list">${completed.length?completed.map(task=>`<button class="continue-row" data-open-record="task:${task.id}"><span class="record-icon">✓</span><span><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short || 'No fair')} · ${UI.esc(Intel.formatTimeAgo(task.completedAt||task.updatedAt))}</small></span><span>›</span></button>`).join(''):empty('No completed tasks','Finished work will collect here.')}</div></section>
-      </div>`;
+    const actions=Intel.productionActions();
+    const critical=actions.filter(x=>x.severity==='critical').slice(0,10);
+    const waiting=Store.state.tasks.filter(t=>t.status==='waiting').sort((a,b)=>Intel.taskRisk(b)-Intel.taskRisk(a));
+    const quickWins=Store.state.tasks.filter(t=>t.status!=='complete'&&!t.blockedBy&&Number(t.estimatedHours||1)<=1).sort((a,b)=>Intel.taskRisk(b)-Intel.taskRisk(a)).slice(0,8);
+    const scheduleRisks=actions.filter(x=>x.kind==='schedule').slice(0,10);
+    const completed=Store.state.tasks.filter(t=>t.status==='complete').sort((a,b)=>new Date(b.completedAt||b.updatedAt)-new Date(a.completedAt||a.updatedAt)).slice(0,8);
+    const hours=Store.state.tasks.filter(t=>t.status!=='complete').reduce((sum,t)=>sum+Number(t.estimatedHours||1),0);
+    const actionRow=item=>{ if(item.kind==='schedule')return `<button class="smart-action-row ${item.severity}" data-open-record="schedule:${item.id}"><span>≡</span><span><b>${UI.esc(item.title)}</b><small>${UI.esc(fair(item.fairId)?.short||'Schedule')} · ${UI.esc(item.detail)}</small></span><em>Review</em></button>`; const task=Store.get('task',item.id); if(task)return `<div class="priority-row"><button class="check-button" data-complete-task="${task.id}">✓</button><button style="display:block;border:0;background:transparent;color:inherit;text-align:left;padding:0" data-open-record="task:${task.id}"><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short||'No fair')} · ${UI.esc(task.blockedBy||task.description||'Production task')}</small></button><em>${UI.esc(Intel.relativeDate(task.due))}</em></div>`; return `<button class="smart-action-row ${item.severity}" data-open-record="${item.kind}:${item.id}"><span>↗</span><span><b>${UI.esc(item.title)}</b><small>${UI.esc(item.detail)}</small></span><em>Open</em></button>`; };
+    $('#myWorkContent').innerHTML=`<section class="work-hero action-hero"><div><span class="eyebrow">Shared command queue</span><h1>Production Action Board.</h1><p>No personal login. This is the combined operational queue for William and Spencer.</p></div><div class="work-stats"><div class="work-stat"><strong>${critical.length}</strong><span>critical exceptions</span></div><div class="work-stat"><strong>${waiting.length}</strong><span>waiting</span></div><div class="work-stat"><strong>${hours}h</strong><span>estimated effort</span></div></div></section><div class="action-summary-strip"><div><span>Schedule health</span><b>${Math.round(Store.state.fairs.reduce((s,f)=>s+Intel.scheduleReadiness(f.id),0)/Math.max(1,Store.state.fairs.length))}%</b></div><div><span>Follow-ups due</span><b>${Intel.followUps().filter(x=>x.due===null||x.due<=0).length}</b></div><div><span>Open issues</span><b>${Store.state.issues.filter(x=>x.status!=='Resolved').length}</b></div><button class="button ghost" data-view="schedule">Open Run of Show →</button></div><div class="work-sections"><section class="panel"><div class="panel-head"><div><span class="eyebrow">Exceptions</span><h3>Handle first</h3></div></div><div class="work-list">${critical.length?critical.map(actionRow).join(''):empty('No critical exceptions','Production has no red-alert items.')}</div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">Schedule intelligence</span><h3>Run-of-show risks</h3></div><button class="text-button" data-view="schedule">Open schedule →</button></div><div class="work-list">${scheduleRisks.length?scheduleRisks.map(actionRow).join(''):empty('Schedules are healthy','No active run-of-show conflicts.')}</div></section>${workPanel('Waiting on someone',waiting,'Nothing waiting','No outside blockers are recorded.')}${workPanel('Quick wins',quickWins,'No quick wins queued','All remaining work needs more time or information.')}<section class="panel"><div class="panel-head"><div><span class="eyebrow">Done</span><h3>Recently finished</h3></div></div><div class="work-list">${completed.length?completed.map(task=>`<button class="continue-row" data-open-record="task:${task.id}"><span class="record-icon">✓</span><span><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short||'No fair')} · ${UI.esc(Intel.formatTimeAgo(task.completedAt||task.updatedAt))}</small></span><span>›</span></button>`).join(''):empty('No completed tasks','Finished work will collect here.')}</div></section></div>`;
   }
   function workPanel(title,items,emptyTitle,emptyMessage){ return `<section class="panel"><div class="panel-head"><div><span class="eyebrow">Work queue</span><h3>${UI.esc(title)}</h3></div></div><div class="work-list">${items.length?items.map(task=>`<div class="priority-row"><button class="check-button" data-complete-task="${task.id}">✓</button><button style="display:block;border:0;background:transparent;color:inherit;text-align:left;padding:0" data-open-record="task:${task.id}"><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short || 'No fair')} · ${UI.esc(task.blockedBy || task.description || 'Production task')}</small></button><em>${UI.esc(Intel.relativeDate(task.due))}</em></div>`).join(''):empty(emptyTitle,emptyMessage)}</div></section>`; }
 
@@ -261,6 +230,21 @@
     $('#calendarDays').innerHTML=cells.join('');
   }
 
+
+  function scheduleIssueHTML(issue){return `<button class="schedule-alert ${issue.severity}" data-open-record="schedule:${issue.slotId}"><i></i><span><b>${UI.esc(issue.title)}</b><small>${UI.esc(issue.body)}</small></span><span>›</span></button>`;}
+  function scheduleRow(slot,index,total){
+    const talent=slot.talentId?Store.get('talent',slot.talentId):null;
+    const issues=Intel.scheduleIssues(slot.fairId).filter(x=>x.slotId===slot.id);
+    return `<article class="schedule-row ${issues.some(x=>x.severity==='critical')?'has-conflict':''}" draggable="true" data-schedule-id="${slot.id}"><div class="schedule-order"><button data-move-slot="up:${slot.id}" ${index===0?'disabled':''}>↑</button><b>${String(index+1).padStart(2,'0')}</b><button data-move-slot="down:${slot.id}" ${index===total-1?'disabled':''}>↓</button></div><button class="schedule-time" data-open-record="schedule:${slot.id}"><b>${UI.esc(Intel.formatClock(slot.startTime))}</b><span>${UI.esc(Intel.formatClock(slot.endTime))}</span></button><button class="schedule-main" data-open-record="schedule:${slot.id}"><span class="schedule-kind">${UI.esc(slot.kind)}</span><h3>${UI.esc(scheduleMode==='public'?(slot.publicTitle||slot.title):slot.title)}</h3><p>${UI.esc(talent?`${talent.name} · ${Intel.talentReadiness(talent)}% ready`:slot.internalNotes||'No linked talent')}</p><div class="schedule-row-tags"><span class="status-pill ${slot.status==='At risk'?'risk':slot.status==='Needs review'?'waiting':''}">${UI.esc(slot.status)}</span><span>${Number(slot.bufferAfter||0)}m transition</span>${issues.length?`<span class="warning-tag">${issues.length} warning${issues.length===1?'':'s'}</span>`:''}</div></button><div class="schedule-actions"><button class="icon-button" data-open-record="schedule:${slot.id}" aria-label="Edit stage block">•••</button></div></article>`;
+  }
+  function renderSchedule(){
+    if(!scheduleFairId||!Store.get('fair',scheduleFairId))scheduleFairId=Intel.nextFair()?.id||Store.state.fairs[0]?.id||'';
+    const fairItem=Store.get('fair',scheduleFairId); const slots=Intel.scheduleForFair(scheduleFairId); const issues=Intel.scheduleIssues(scheduleFairId); const score=Intel.scheduleReadiness(scheduleFairId);
+    const totalMinutes=slots.reduce((sum,slot)=>{const s=Intel.timeToMinutes(slot.startTime),e=Intel.timeToMinutes(slot.endTime);return sum+(s!==null&&e!==null?Math.max(0,e-s):0)},0);
+    const publicSlots=slots.filter(x=>x.publicVisible);
+    $('#scheduleContent').innerHTML=`<div class="schedule-toolbar"><label><span>Fair workspace</span><select id="scheduleFairSelect">${Store.state.fairs.map(f=>`<option value="${f.id}" ${f.id===scheduleFairId?'selected':''}>${UI.esc(f.name)}</option>`).join('')}</select></label><div class="segmented-control"><button class="${scheduleMode==='internal'?'active':''}" data-schedule-mode="internal">Internal ROS</button><button class="${scheduleMode==='public'?'active':''}" data-schedule-mode="public">Public Schedule</button></div><button class="button ghost" data-copy-public-schedule>Copy Public Schedule</button></div><div class="schedule-metrics"><article><span>ROS readiness</span><strong>${score}%</strong><div class="meter"><i style="width:${score}%"></i></div></article><article><span>Stage blocks</span><strong>${slots.length}</strong><small>${publicSlots.length} public</small></article><article><span>Program time</span><strong>${Math.floor(totalMinutes/60)}h ${totalMinutes%60}m</strong><small>excluding transitions</small></article><article><span>Exceptions</span><strong>${issues.filter(x=>x.severity!=='info').length}</strong><small>${issues.filter(x=>x.severity==='critical').length} critical</small></article></div><div class="schedule-layout"><section class="panel schedule-builder"><div class="panel-head"><div><span class="eyebrow">${UI.esc(fairItem?.short||'Fair')}</span><h3>${scheduleMode==='public'?'Public-facing schedule':'Internal run of show'}</h3><p>${scheduleMode==='public'?'Only public titles and visible stage blocks are shown.':'Production notes, transitions, status, and linked readiness stay visible.'}</p></div><button class="button primary" data-create="schedule">＋ Add Block</button></div><div class="schedule-list">${(scheduleMode==='public'?publicSlots:slots).length?(scheduleMode==='public'?publicSlots:slots).map((slot,index,list)=>scheduleRow(slot,index,list.length)).join(''):empty('No stage blocks','Add the first stage block to begin the run of show.')}</div></section><aside class="schedule-side"><section class="panel"><div class="panel-head"><div><span class="eyebrow">Schedule intelligence</span><h3>Conflicts & pressure</h3></div></div><div class="schedule-alert-list">${issues.length?issues.map(scheduleIssueHTML).join(''):empty('No conflicts detected','Transitions, timing, and linked talent readiness look healthy.')}</div></section><section class="panel public-preview"><div class="panel-head"><div><span class="eyebrow">Public preview</span><h3>${UI.esc(fairItem?.name||'Fair')}</h3></div></div><div>${publicSlots.length?publicSlots.map(slot=>`<div class="public-schedule-row"><time>${UI.esc(Intel.formatClock(slot.startTime))}</time><span><b>${UI.esc(slot.publicTitle||slot.title)}</b><small>${UI.esc(slot.kind)}</small></span></div>`).join(''):empty('No public blocks','Mark blocks public to preview the guest schedule.')}</div></section></aside></div>`;
+  }
+
   function renderFiles(){
     $('#fileToolbar').innerHTML=`<button class="filter-button ${fileFairFilter==='All'?'active':''}" data-file-fair="All">All</button>${Store.state.fairs.map(f=>`<button class="filter-button ${fileFairFilter===f.id?'active':''}" data-file-fair="${f.id}">${UI.esc(f.code)}</button>`).join('')}`;
     const list=fileFairFilter==='All'?Store.state.files:Store.state.files.filter(f=>f.fairId===fileFairFilter);
@@ -270,13 +254,12 @@
   function renderActivity(){ $('#activityFeed').innerHTML=Store.state.activity.length?Store.state.activity.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp)).map(activityRow).join(''):empty('No activity yet','Changes will be recorded here.'); }
 
   function renderDayOf(){
-    const fairItem=Intel.nextFair() || Store.state.fairs[0];
-    const talent=Store.state.talent.filter(t=>t.fairId===fairItem?.id);
-    const current=talent[0];const next=talent[1];
-    const openIssues=Store.state.issues.filter(i=>i.status!=='Resolved');
-    $('#dayOfContent').innerHTML=`
-      <section class="dayof-hero"><div><span class="eyebrow">Live production workspace</span><h1>Day-of Command</h1><p>${UI.esc(fairItem?.name || 'Choose a fair')} · Touch-friendly local controls for backstage use.</p></div><span class="live-indicator"><i></i>Preview mode</span></section>
-      <div class="dayof-grid"><section class="stage-now"><span class="eyebrow">Current stage block</span><h2>${UI.esc(current?.name || 'No act selected')}</h2><p>${UI.esc(current?.performanceTime || 'Stage time not set')} · ${UI.esc(fairItem?.stage || '')}</p><div class="stage-time" id="stageClock">${new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit'}).format(new Date())}</div><div class="stage-actions"><button class="stage-action" data-day-action="checkin:${current?.id||''}">Checked In</button><button class="stage-action" data-day-action="ready:${current?.id||''}">Ready</button><button class="stage-action" data-day-action="complete:${current?.id||''}">Complete</button></div><div class="drawer-section"><div class="drawer-section-head"><h3>Up next</h3></div>${next?UI.relatedRow('talent',next):empty('No next act','Add talent to the fair workspace.')}</div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">Live issues</span><h3>Production tracker</h3></div><button class="button ghost" data-create="issue">＋ Log issue</button></div><div class="issue-list">${openIssues.length?openIssues.map(issue=>`<article class="issue-card"><b>${UI.esc(issue.title)}</b><span>${UI.esc(issue.severity)} · ${UI.esc(issue.owner)} · ${UI.esc(Intel.formatTimeAgo(issue.createdAt))}</span><button class="mini-action" data-cycle-issue="${issue.id}">${UI.esc(issue.status)} →</button></article>`).join(''):empty('No live issues','The current production queue is clear.')}</div></section></div>`;
+    const fairId=Store.state.preferences.dayOfFairId||scheduleFairId||Intel.nextFair()?.id||Store.state.fairs[0]?.id;
+    const fairItem=Store.get('fair',fairId); const slots=Intel.scheduleForFair(fairId); let activeId=Store.state.preferences.dayOfSlotId; if(!slots.some(x=>x.id===activeId))activeId=slots[0]?.id||'';
+    const activeIndex=Math.max(0,slots.findIndex(x=>x.id===activeId)); const current=slots[activeIndex]; const next=slots[activeIndex+1]; const after=slots[activeIndex+2]; const talent=current?.talentId?Store.get('talent',current.talentId):null;
+    const openIssues=Store.state.issues.filter(i=>i.fairId===fairId&&i.status!=='Resolved'); const checks=Store.state.preferences.dayOfChecks?.[fairId]||{};
+    const checklist=[['stage','Stage clear & reset'],['audio','Playback/audio ready'],['mics','Microphones ready'],['talent','Current talent ready'],['host','Emcee briefed']];
+    $('#dayOfContent').innerHTML=`<section class="dayof-hero"><div><span class="eyebrow">Live production workspace</span><h1>Day-of Command</h1><p>${UI.esc(fairItem?.name||'Choose a fair')} · Run the stage from the locked schedule.</p></div><div class="dayof-selector"><select id="dayOfFairSelect">${Store.state.fairs.map(f=>`<option value="${f.id}" ${f.id===fairId?'selected':''}>${UI.esc(f.short)}</option>`).join('')}</select><span class="live-indicator"><i></i>Preview mode</span></div></section><div class="dayof-command-grid"><section class="stage-now"><div class="stage-now-head"><span class="eyebrow">Current stage block</span><select id="dayOfSlotSelect">${slots.map(slot=>`<option value="${slot.id}" ${slot.id===activeId?'selected':''}>${UI.esc(Intel.formatClock(slot.startTime))} · ${UI.esc(slot.title)}</option>`).join('')}</select></div><h2>${UI.esc(current?.title||'No stage block')}</h2><p>${UI.esc(current?`${Intel.formatClock(current.startTime)}–${Intel.formatClock(current.endTime)} · ${current.kind}`:'Build a run of show first')}</p><div class="stage-time" id="stageClock">${new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit'}).format(new Date())}</div><div class="live-talent-card"><span>${talent?'Linked talent':'Stage block'}</span><b>${UI.esc(talent?.name||current?.publicTitle||'No linked talent')}</b><small>${talent?`${Intel.talentReadiness(talent)}% ready · ${talent.dayOfStatus||'Not checked in'}`:UI.esc(current?.internalNotes||'')}</small></div><div class="stage-actions">${talent?`<button class="stage-action" data-day-action="checkin:${talent.id}">Checked In</button><button class="stage-action" data-day-action="ready:${talent.id}">Ready</button><button class="stage-action" data-day-action="complete:${talent.id}">Complete</button>`:''}</div><div class="delay-controls"><span>Running late?</span><button data-delay-schedule="5:${current?.id||''}">Push +5m</button><button data-delay-schedule="10:${current?.id||''}">Push +10m</button></div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">Stage queue</span><h3>Next up</h3></div></div><div class="stage-queue">${next?`<button data-day-select-slot="${next.id}"><time>${UI.esc(Intel.formatClock(next.startTime))}</time><span><b>${UI.esc(next.title)}</b><small>${UI.esc(next.kind)}</small></span><em>Next</em></button>`:empty('No next block','This is the final scheduled block.')}${after?`<button data-day-select-slot="${after.id}"><time>${UI.esc(Intel.formatClock(after.startTime))}</time><span><b>${UI.esc(after.title)}</b><small>${UI.esc(after.kind)}</small></span><em>After</em></button>`:''}</div><div class="drawer-section"><div class="drawer-section-head"><h3>Live checklist</h3></div><div class="live-checklist">${checklist.map(([key,label])=>`<button class="${checks[key]?'checked':''}" data-day-check="${key}"><span>${checks[key]?'✓':''}</span><b>${label}</b></button>`).join('')}</div></div></section><section class="panel dayof-issues"><div class="panel-head"><div><span class="eyebrow">Live issues</span><h3>Production tracker</h3></div><button class="button ghost" data-create="issue">＋ Log issue</button></div><div class="issue-list">${openIssues.length?openIssues.map(issue=>`<article class="issue-card"><b>${UI.esc(issue.title)}</b><span>${UI.esc(issue.severity)} · ${UI.esc(issue.owner)} · ${UI.esc(Intel.formatTimeAgo(issue.createdAt))}</span><button class="mini-action" data-cycle-issue="${issue.id}">${UI.esc(issue.status)} →</button></article>`).join(''):empty('No live issues','The current production queue is clear.')}</div><button class="button primary full" data-copy-handoff>Copy Production Handoff</button></section></div>`;
   }
 
   function renderNotifications(){
@@ -286,11 +269,11 @@
   }
 
   function renderBadges(){
-    const user=Store.state.currentUser;
-    const due=Intel.dueTasks(user).filter(t=>t.risk>=65).length;
-    const my=Store.state.tasks.filter(t=>t.owner===user&&t.status!=='complete').length;
+    const due=Intel.productionActions().filter(x=>x.severity==='critical').length;
+    const actions=Intel.productionActions().length;
     const follow=Intel.followUps().filter(x=>x.due===null||x.due<=0).length;
-    $('#todayBadge').textContent=due?String(due):'';$('#myWorkBadge').textContent=my?String(my):'';$('#followUpBadge').textContent=follow?String(follow):'';
+    const schedule=Store.state.fairs.reduce((sum,f)=>sum+Intel.scheduleIssues(f.id).filter(x=>x.severity!=='info').length,0);
+    $('#todayBadge').textContent=due?String(due):''; $('#myWorkBadge').textContent=actions?String(Math.min(actions,99)):''; $('#followUpBadge').textContent=follow?String(follow):''; if($('#scheduleBadge'))$('#scheduleBadge').textContent=schedule?String(schedule):'';
   }
 
   function openDrawer(type,id,tab='overview'){
@@ -311,7 +294,7 @@
 
   function createDefaults(type,relatedType='',relatedId=''){
     const defaults={};const related=Store.get(relatedType,relatedId);
-    if(type==='task'||type==='deadline'||type==='file'||type==='note'){
+    if(type==='task'||type==='schedule'||type==='deadline'||type==='file'||type==='note'){
       if(relatedType==='fair')defaults.fairId=relatedId;
       else if(related?.fairId)defaults.fairId=related.fairId;
     }
@@ -363,7 +346,7 @@
     const results=Intel.search(query);
     if(!query.trim()){
       const recent=Store.state.recentViewed.map(x=>({...x,item:Store.get(x.type,x.id)})).filter(x=>x.item);
-      $('#searchResults').innerHTML=`<div class="search-group-title">Recently viewed</div>${recent.length?recent.map((x,i)=>searchResult(x.type,x.item,i)).join(''):empty('Search the production board','Find any connected fair, performer, task, contact, file, or deadline.')}`;
+      $('#searchResults').innerHTML=`<div class="search-group-title">Recently viewed</div>${recent.length?recent.map((x,i)=>searchResult(x.type,x.item,i)).join(''):empty('Search the production board','Find any connected fair, performer, task, stage block, contact, file, or deadline.')}`;
       return;
     }
     searchSelection=Math.min(searchSelection,Math.max(0,results.length-1));
@@ -375,9 +358,24 @@
   function closePopovers(){ $$('.popover').forEach(p=>p.classList.remove('open'));$('#userMenu').classList.remove('open'); }
   function togglePopover(selector){ const el=$(selector);const willOpen=!el.classList.contains('open');closePopovers();if(willOpen)el.classList.add('open'); }
 
+
+  function moveScheduleSlot(direction,id){
+    const slots=Intel.scheduleForFair(Store.get('schedule',id)?.fairId||''); const index=slots.findIndex(x=>x.id===id); const target=direction==='up'?index-1:index+1; if(index<0||target<0||target>=slots.length)return;
+    const a=slots[index],b=slots[target],before=[a.order,b.order]; [a.order,b.order]=[b.order,a.order]; a.updatedAt=Store.nowISO();b.updatedAt=Store.nowISO();Store.log('Production',`moved “${a.title}” ${direction} in the run of show.`,'schedule',a.id,a.fairId);Store.save();UI.toast('Run of show reordered',a.title,()=>{[a.order,b.order]=before;Store.save();});
+  }
+  function shiftSchedule(minutes,slotId){
+    const slot=Store.get('schedule',slotId);if(!slot)return;const slots=Intel.scheduleForFair(slot.fairId);const index=slots.findIndex(x=>x.id===slotId);const affected=slots.slice(index);const before=affected.map(x=>({id:x.id,startTime:x.startTime,endTime:x.endTime}));affected.forEach(x=>{const s=Intel.timeToMinutes(x.startTime),e=Intel.timeToMinutes(x.endTime);if(s!==null)x.startTime=Intel.minutesToTime(s+minutes);if(e!==null)x.endTime=Intel.minutesToTime(e+minutes);x.updatedAt=Store.nowISO();});Store.log('Production',`pushed ${affected.length} stage block${affected.length===1?'':'s'} by ${minutes} minutes.`,'schedule',slot.id,slot.fairId);Store.save();UI.toast(`Schedule pushed +${minutes}m`,`${affected.length} block${affected.length===1?'':'s'} updated`,()=>{before.forEach(old=>Object.assign(Store.get('schedule',old.id),old));Store.save();});
+  }
+  async function copyPublicSchedule(){
+    const fairItem=Store.get('fair',scheduleFairId);const lines=Intel.scheduleForFair(scheduleFairId).filter(x=>x.publicVisible).map(x=>`${Intel.formatClock(x.startTime)} — ${x.publicTitle||x.title}`);const text=`${fairItem?.name||'Out at the Fair'}\n${Intel.formatDate(fairItem?.date)}\n\n${lines.join('\n')}`;try{await navigator.clipboard.writeText(text);UI.toast('Public schedule copied','Ready to paste into an email, website, or social post.');}catch{UI.download('public-schedule.txt',text,'text/plain');}
+  }
+  async function copyHandoff(){
+    const fairId=Store.state.preferences.dayOfFairId||scheduleFairId;const fairItem=Store.get('fair',fairId);const slots=Intel.scheduleForFair(fairId);const activeId=Store.state.preferences.dayOfSlotId;const idx=Math.max(0,slots.findIndex(x=>x.id===activeId));const current=slots[idx],next=slots[idx+1];const issues=Store.state.issues.filter(x=>x.fairId===fairId&&x.status!=='Resolved');const text=`OATF PRODUCTION HANDOFF\n${fairItem?.name||''}\nGenerated ${new Date().toLocaleString()}\n\nCURRENT: ${current?`${Intel.formatClock(current.startTime)} ${current.title}`:'None'}\nNEXT: ${next?`${Intel.formatClock(next.startTime)} ${next.title}`:'None'}\nOPEN ISSUES: ${issues.length?issues.map(x=>`${x.severity}: ${x.title} (${x.status})`).join('; '):'None'}\nSCHEDULE WARNINGS: ${Intel.scheduleIssues(fairId).filter(x=>x.severity!=='info').length}`;try{await navigator.clipboard.writeText(text);UI.toast('Production handoff copied','Ready to text or email to the next lead.');}catch{UI.download('production-handoff.txt',text,'text/plain');}
+  }
+
   // Event listeners
   $('#enterBoard').addEventListener('click',enterBoard);
-  $$('.login-user').forEach(btn=>btn.addEventListener('click',()=>{selectedLoginUser=btn.dataset.loginUser;renderUser();}));
+  $$('.login-user').forEach(btn=>btn.addEventListener('click',()=>{selectedLoginUser='Production';renderUser();}));
   $('#mobileMenu').addEventListener('click',()=>{$('#sidebar').classList.toggle('open');$('#scrim').classList.toggle('open',$('#sidebar').classList.contains('open'));});
   $('#collapseSidebar').addEventListener('click',()=>{Store.state.preferences.sidebarCollapsed=!Store.state.preferences.sidebarCollapsed;Store.save();renderUser();});
   $('#scrim').addEventListener('click',()=>{closeDrawer();$('#sidebar').classList.remove('open');$('#scrim').classList.remove('open');});
@@ -427,12 +425,23 @@
     const openNotification=event.target.closest('[data-open-notification]')?.dataset.openNotification;if(openNotification){const {type,id}=recordFromPair(openNotification);closePopovers();openDrawer(type,id);return;}
     const cycle=event.target.closest('[data-cycle-issue]')?.dataset.cycleIssue;if(cycle){const issue=Store.get('issue',cycle);const before={...issue};issue.status={Open:'Monitoring',Monitoring:'Resolved',Resolved:'Open'}[issue.status]||'Open';issue.updatedAt=Store.nowISO();Store.log(Store.state.currentUser,`changed issue “${issue.title}” to ${issue.status}.`,'issue',issue.id,issue.fairId);Store.save();UI.toast('Issue updated',issue.status,()=>{Object.assign(issue,before);Store.save();});return;}
     const dayAction=event.target.closest('[data-day-action]')?.dataset.dayAction;if(dayAction){const [action,id]=dayAction.split(':');if(!id)return;const talent=Store.get('talent',id);if(action==='ready'){talent.status='Ready';}if(action==='complete'){talent.status='Ready';talent.dayOfStatus='Complete';}if(action==='checkin'){talent.dayOfStatus='Checked In';}talent.updatedAt=Store.nowISO();Store.log(Store.state.currentUser,`${action==='checkin'?'checked in':action==='complete'?'completed':'marked ready'} ${talent.name}.`,'talent',talent.id,talent.fairId);Store.save();UI.toast('Day-of status updated',`${talent.name} · ${talent.dayOfStatus||talent.status}`);return;}
-    const switchUser=event.target.closest('[data-switch-user]')?.dataset.switchUser;if(switchUser){Store.setCurrentUser(switchUser);selectedLoginUser=switchUser;closePopovers();UI.toast(`Viewing as ${switchUser}`,'Production Board priorities updated.');return;}
+
+    const scheduleModeBtn=event.target.closest('[data-schedule-mode]')?.dataset.scheduleMode;if(scheduleModeBtn){scheduleMode=scheduleModeBtn;Store.setPreference('scheduleMode',scheduleMode);renderSchedule();return;}
+    const moveSlot=event.target.closest('[data-move-slot]')?.dataset.moveSlot;if(moveSlot){const [direction,id]=moveSlot.split(':');moveScheduleSlot(direction,id);return;}
+    if(event.target.closest('[data-copy-public-schedule]')){copyPublicSchedule();return;}
+    const daySelect=event.target.closest('[data-day-select-slot]')?.dataset.daySelectSlot;if(daySelect){Store.setPreference('dayOfSlotId',daySelect);renderDayOf();return;}
+    const delayPair=event.target.closest('[data-delay-schedule]')?.dataset.delaySchedule;if(delayPair){const [minutes,id]=delayPair.split(':');shiftSchedule(Number(minutes),id);return;}
+    const dayCheck=event.target.closest('[data-day-check]')?.dataset.dayCheck;if(dayCheck){const fairId=Store.state.preferences.dayOfFairId||scheduleFairId;Store.state.preferences.dayOfChecks ||= {};Store.state.preferences.dayOfChecks[fairId] ||= {};Store.state.preferences.dayOfChecks[fairId][dayCheck]=!Store.state.preferences.dayOfChecks[fairId][dayCheck];Store.save();renderDayOf();return;}
+    if(event.target.closest('[data-copy-handoff]')){copyHandoff();return;}
+    const switchUser=event.target.closest('[data-switch-user]')?.dataset.switchUser;if(switchUser){return;}
     const action=event.target.closest('[data-action]')?.dataset.action;if(action==='export'){const date=todayISO();UI.download(`oatf-os-production-backup-${date}.json`,Store.exportData());UI.toast('Backup exported','Production data downloaded.');closePopovers();return;}if(action==='import'){$('#importInput').click();closePopovers();return;}
   });
 
   document.addEventListener('change',event=>{
     if(event.target.id==='taskFairSelect'){taskFairFilter=event.target.value;renderTasks();}
+    if(event.target.id==='scheduleFairSelect'){scheduleFairId=event.target.value;Store.setPreference('scheduleFairId',scheduleFairId);renderSchedule();}
+    if(event.target.id==='dayOfFairSelect'){Store.setPreference('dayOfFairId',event.target.value);Store.setPreference('dayOfSlotId',Intel.scheduleForFair(event.target.value)[0]?.id||'');renderDayOf();}
+    if(event.target.id==='dayOfSlotSelect'){Store.setPreference('dayOfSlotId',event.target.value);renderDayOf();}
   });
   $('#importInput').addEventListener('change',async event=>{const file=event.target.files?.[0];if(!file)return;try{Store.importData(await file.text());UI.toast('Backup restored','Production Board data imported.');}catch(error){alert(error.message);}event.target.value='';});
 
@@ -452,7 +461,7 @@
     if(event.key.toLowerCase()==='g'){keyboardChord='g';clearTimeout(keyboardChordTimer);keyboardChordTimer=setTimeout(()=>keyboardChord='',1000);return;}
     if(keyboardChord==='g'){
       const key=event.key.toLowerCase();keyboardChord='';
-      if(key==='t')showView('tasks');if(key==='f')showView('fairs');if(key==='c')showView('contacts');if(key==='m')showView('mywork');
+      if(key==='t')showView('tasks');if(key==='f')showView('fairs');if(key==='c')showView('contacts');if(key==='m')showView('mywork');if(key==='s')showView('schedule');
     }
   });
 

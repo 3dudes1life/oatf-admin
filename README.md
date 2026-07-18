@@ -1,55 +1,36 @@
-# OATF OS — Production Board
+# OATF OS — Production
 
-Version 0.03
+Version 0.04
 
-Shared production workspace for William and Spencer.
+Shared production portal for William and Spencer. The workspace identity is **Production**, not an individual account.
 
-## Portal boundary
+## V0.04
 
-This build is intentionally production-facing. It does not contain:
+- Production-wide Action Board
+- Run-of-show builder
+- public and internal schedule modes
+- stage-block forms and connected records
+- overlap detection
+- transition-buffer warnings
+- schedule-gap detection
+- linked talent readiness warnings
+- arrival-window warnings
+- public schedule generator
+- copy-ready public schedule
+- stronger Day-of Command
+- stage queue
+- delay propagation to downstream stage blocks
+- live readiness checklist
+- production handoff generator
+- fair-specific live issue tracking
+- schedule health included in fair readiness
+- migration from V0.03 browser data
+- local-first storage, backup, and offline shell
 
-- fair payments or revenue
-- production profit or budget data
-- private fair agreements
-- negotiations
-- insurance information
-- executive-only notes
-- AI features
+## Portal separation
 
-Those belong in the future private **OATF Admin** portal.
+This ZIP contains only **Production**. It does not contain an Admin password, Admin login, financials, fair payments, revenue, internal negotiations, private contracts, insurance, or executive-only notes. Those will live in a separately deployed **OATF Admin** portal available only to William.
 
-## V0.03 features
+## Hosting
 
-- Apple-inspired Today view
-- My Work view personalized for William or Spencer
-- connected fair, talent, task, contact, file, deadline, note, issue, and activity records
-- slide-over record details
-- favorites
-- recently viewed records
-- universal local search with Command/Ctrl + K
-- production contacts and follow-up center
-- talent readiness and missing-material detection
-- task risk and fair readiness calculations
-- local notifications
-- quick-create menu
-- drag-and-drop task board
-- autosave indicator
-- undo for supported actions
-- calendar
-- local activity timeline
-- local JSON export and import
-- responsive mobile dock
-- installable PWA shell
-- offline asset cache
-- local identity switcher for William and Spencer
-- day-of preview workspace
-
-## Local-first behavior
-
-Data is stored in the current browser using localStorage. The app attempts to migrate compatible V0.01 and V0.02 local data when available.
-
-No database, email, cloud file storage, authentication provider, or external API is connected.
-
-## Upload
-
-Upload the contents of this folder to a static host such as GitHub Pages. Keep the relative folder structure intact.
+Upload all contents while preserving the folder structure. It works as a static local-first site on GitHub Pages or another static host.

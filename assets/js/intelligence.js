@@ -71,6 +71,76 @@
     ];
     return Math.round(checks.filter(Boolean).length/checks.length*100);
   }
+
+  function timeToMinutes(value){
+    const match = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return null;
+    const hours = Number(match[1]), minutes = Number(match[2]);
+    if (hours > 23 || minutes > 59) return null;
+    return hours*60+minutes;
+  }
+  function minutesToTime(value){
+    const minutes = Math.max(0,Number(value || 0));
+    return `${String(Math.floor(minutes/60)%24).padStart(2,'0')}:${String(minutes%60).padStart(2,'0')}`;
+  }
+  function formatClock(value){
+    const mins=timeToMinutes(value); if(mins===null)return value || 'TBD';
+    const d=new Date(2020,0,1,Math.floor(mins/60),mins%60);
+    return new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit'}).format(d);
+  }
+  function scheduleForFair(fairId){
+    return Store.state.schedules.filter(slot=>slot.fairId===fairId).sort((a,b)=>(Number(a.order||0)-Number(b.order||0)) || ((timeToMinutes(a.startTime)??9999)-(timeToMinutes(b.startTime)??9999)));
+  }
+  function scheduleIssues(fairId){
+    const slots=scheduleForFair(fairId); const issues=[];
+    slots.forEach((slot,index)=>{
+      const start=timeToMinutes(slot.startTime), end=timeToMinutes(slot.endTime);
+      const talent=slot.talentId ? Store.get('talent',slot.talentId) : null;
+      if(start===null||end===null||end<=start) issues.push({id:`slot-time:${slot.id}`,slotId:slot.id,severity:'critical',title:`${slot.title}: invalid time block`,body:'Start and end times must create a valid stage block.'});
+      if(slot.publicVisible && !String(slot.publicTitle||'').trim()) issues.push({id:`slot-public:${slot.id}`,slotId:slot.id,severity:'warning',title:`${slot.title}: public title missing`,body:'Public schedule cannot be generated cleanly.'});
+      if(talent){
+        const readiness=talentReadiness(talent);
+        if(readiness<55) issues.push({id:`slot-ready:${slot.id}`,slotId:slot.id,severity:'critical',title:`${slot.title}: talent is only ${readiness}% ready`,body:`Missing ${talentMissing(talent).join(', ') || 'production details'}.`});
+        else if(readiness<80) issues.push({id:`slot-ready:${slot.id}`,slotId:slot.id,severity:'warning',title:`${slot.title}: talent readiness needs review`,body:`${readiness}% production-ready.`});
+        if(['Performance','Glam Show','Story Time'].includes(slot.kind) && talent.musicStatus!=='Received' && slot.kind!=='Story Time') issues.push({id:`slot-music:${slot.id}`,slotId:slot.id,severity:'warning',title:`${slot.title}: music is not received`,body:'Playback-dependent stage block is not locked.'});
+        const arrival=timeToMinutes(convertLooseTime(talent.arrivalTime));
+        if(arrival!==null&&start!==null&&arrival>start-20) issues.push({id:`slot-arrival:${slot.id}`,slotId:slot.id,severity:'warning',title:`${slot.title}: arrival window is too tight`,body:`Arrival is ${formatClock(convertLooseTime(talent.arrivalTime))} for a ${formatClock(slot.startTime)} stage time.`});
+      }
+      if(index>0){
+        const prev=slots[index-1]; const prevEnd=timeToMinutes(prev.endTime); const required=Number(prev.bufferAfter||0);
+        if(start!==null&&prevEnd!==null){
+          const gap=start-prevEnd;
+          if(gap<0) issues.push({id:`slot-overlap:${prev.id}:${slot.id}`,slotId:slot.id,severity:'critical',title:`${prev.title} overlaps ${slot.title}`,body:`The blocks overlap by ${Math.abs(gap)} minutes.`});
+          else if(gap<required) issues.push({id:`slot-buffer:${prev.id}:${slot.id}`,slotId:slot.id,severity:'warning',title:`Transition after ${prev.title} is too short`,body:`Needs ${required} minutes; only ${gap} scheduled.`});
+          else if(gap>60) issues.push({id:`slot-gap:${prev.id}:${slot.id}`,slotId:slot.id,severity:'info',title:`${gap}-minute public schedule gap`,body:`Review whether this gap is intentional or needs programming.`});
+        }
+      }
+    });
+    return issues;
+  }
+  function convertLooseTime(value){
+    const text=String(value||'').trim();
+    const direct=text.match(/^(\d{1,2}):(\d{2})$/); if(direct)return `${String(Number(direct[1])).padStart(2,'0')}:${direct[2]}`;
+    const match=text.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i); if(!match)return '';
+    let hour=Number(match[1]); const minute=Number(match[2]||0); const period=match[3].toUpperCase();
+    if(period==='PM'&&hour!==12)hour+=12; if(period==='AM'&&hour===12)hour=0;
+    return `${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}`;
+  }
+  function scheduleReadiness(fairId){
+    const slots=scheduleForFair(fairId); if(!slots.length)return 0;
+    const issues=scheduleIssues(fairId);
+    const penalty=issues.reduce((sum,item)=>sum+({critical:24,warning:10,info:3}[item.severity]||5),0);
+    const locked=slots.filter(slot=>['Locked','Ready'].includes(slot.status)).length/slots.length*20;
+    return Math.max(0,Math.min(100,Math.round(80+locked-penalty)));
+  }
+  function productionActions(){
+    const actions=[];
+    Store.state.tasks.filter(t=>t.status!=='complete').forEach(task=>actions.push({kind:'task',id:task.id,fairId:task.fairId,title:task.title,detail:task.blockedBy||task.description||'Production task',severity:taskRisk(task)>=80?'critical':taskRisk(task)>=55?'warning':'normal',score:taskRisk(task),due:daysUntil(task.due)}));
+    followUps().forEach(item=>actions.push({kind:item.kind,id:item.id,fairId:item.fairId,title:`Follow up with ${item.name}`,detail:item.reason,severity:item.due!==null&&item.due<0?'critical':'warning',score:item.due!==null&&item.due<0?85:55,due:item.due}));
+    Store.state.fairs.forEach(fair=>scheduleIssues(fair.id).forEach(issue=>actions.push({kind:'schedule',id:issue.slotId,fairId:fair.id,title:issue.title,detail:issue.body,severity:issue.severity,score:issue.severity==='critical'?92:issue.severity==='warning'?65:35,due:null})));
+    return actions.sort((a,b)=>b.score-a.score || (a.due??9999)-(b.due??9999));
+  }
+
   function taskRisk(task){
     if (task.status === 'complete') return 0;
     let score = 0;
@@ -98,7 +168,8 @@
     const contactScore = Math.min(100,contacts.length*24);
     const fileScore = Math.min(100,files.length*25);
     const overduePenalty = tasks.filter(t => t.status !== 'complete' && daysUntil(t.due) < 0).length*8;
-    return Math.max(0,Math.min(100,Math.round(taskScore*.45+talentScore*.35+contactScore*.1+fileScore*.1-overduePenalty)));
+    const scheduleScore = scheduleReadiness(fair.id);
+    return Math.max(0,Math.min(100,Math.round(taskScore*.38+talentScore*.30+scheduleScore*.18+contactScore*.07+fileScore*.07-overduePenalty)));
   }
   function seasonReadiness(){
     const fairs = Store.state.fairs;
@@ -113,13 +184,13 @@
   }
   function dueTasks(user=Store.state.currentUser){
     return Store.state.tasks
-      .filter(t => t.owner === user && t.status !== 'complete')
+      .filter(t => (user === 'Production' || t.owner === user) && t.status !== 'complete')
       .map(t => ({...t,risk:taskRisk(t),days:daysUntil(t.due)}))
       .sort((a,b) => b.risk-a.risk || (a.days ?? 9999)-(b.days ?? 9999));
   }
   function completedThisWeek(user=Store.state.currentUser){
     const weekAgo = Date.now()-7*86400000;
-    return Store.state.tasks.filter(t => t.owner === user && t.status === 'complete' && new Date(t.completedAt || t.updatedAt).getTime() >= weekAgo);
+    return Store.state.tasks.filter(t => (user === 'Production' || t.owner === user) && t.status === 'complete' && new Date(t.completedAt || t.updatedAt).getTime() >= weekAgo);
   }
   function followUps(){
     const s = Store.state;
@@ -154,6 +225,7 @@
       if (missing.length >= 3 && ['Offered','Contracted','Ready'].includes(item.status)) items.push({id:`talent:${item.id}`,type:'talent',entityId:item.id,severity:missing.length>=5?'critical':'warning',title:`${item.name} is not production-ready`,body:`Missing ${missing.slice(0,4).join(', ')}${missing.length>4?'…':''}`});
     });
     followUps().filter(x => x.due !== null && x.due <= 0).forEach(item => items.push({id:`follow:${item.kind}:${item.id}`,type:item.kind,entityId:item.id,severity:item.due < 0?'critical':'warning',title:`Follow up with ${item.name}`,body:item.reason}));
+    Store.state.fairs.forEach(fair => scheduleIssues(fair.id).filter(issue=>issue.severity!=='info').forEach(issue=>items.push({id:`schedule:${issue.id}`,type:'schedule',entityId:issue.slotId,severity:issue.severity,title:issue.title,body:`${fair.short} · ${issue.body}`})));
     return items.filter(item => !dismissed.has(item.id)).slice(0,25);
   }
   function fairStatus(fair){
@@ -180,6 +252,7 @@
     s.tasks.forEach(t => add('task',t,t.title,`${t.owner} · ${relativeDate(t.due)}`,`${t.status} ${t.priority} ${t.description} ${t.blockedBy} ${s.fairs.find(f=>f.id===t.fairId)?.name || ''}`));
     s.contacts.forEach(c => add('contact',c,c.name,`${c.role} · ${c.organization}`,`${c.type} ${c.email} ${c.status} ${c.notes}`));
     s.files.forEach(f => add('file',f,f.name,`${f.type} · ${f.folder}`,`${f.owner} ${f.notes} ${s.fairs.find(x=>x.id===f.fairId)?.name || ''}`));
+    s.schedules.forEach(slot => add('schedule',slot,slot.title,`${formatClock(slot.startTime)} · ${s.fairs.find(f=>f.id===slot.fairId)?.short || ''}`,`${slot.kind} ${slot.publicTitle} ${slot.status} ${slot.internalNotes} ${scheduleIssues(slot.fairId).filter(x=>x.slotId===slot.id).map(x=>x.title).join(' ')}`));
     s.deadlines.forEach(d => add('deadline',d,d.title,`${relativeDate(d.date)} · ${d.owner}`,`${d.kind} ${s.fairs.find(f=>f.id===d.fairId)?.name || ''}`));
     s.notes.forEach(n => add('note',n,n.body.slice(0,60),`${n.author} · ${formatTimeAgo(n.createdAt)}`,n.body));
     return results.sort((a,b) => b.score-a.score).slice(0,40);
@@ -200,11 +273,12 @@
       talent:s.talent.filter(t => type === 'fair' ? t.fairId===id : type === 'contact' ? t.contactId===id : talentId ? t.id===talentId : false),
       contacts:s.contacts.filter(c => type === 'fair' ? c.fairIds?.includes(id) : contactId ? c.id===contactId : false),
       files:s.files.filter(f => type === 'fair' ? f.fairId===id : type === 'talent' ? f.talentId===id : fairId ? f.fairId===fairId : false),
+      schedules:s.schedules.filter(slot => type === 'fair' ? slot.fairId===id : type === 'talent' ? slot.talentId===id : type === 'schedule' ? slot.id===id : fairId ? slot.fairId===fairId : false),
       deadlines:s.deadlines.filter(d => type === 'fair' ? d.fairId===id : d.relatedType===type && d.relatedId===id),
       notes:s.notes.filter(n => n.relatedType===type && n.relatedId===id || (type==='fair' && n.fairId===id)),
       activity:activityFor(type,id)
     };
   }
 
-  window.OATFIntel = {dateOnly,daysUntil,relativeDate,formatDate,formatTimeAgo,greeting,talentMissing,talentReadiness,taskRisk,fairReadiness,seasonReadiness,nextFair,dueTasks,completedThisWeek,followUps,notifications,fairStatus,search,activityFor,related};
+  window.OATFIntel = {timeToMinutes,minutesToTime,formatClock,scheduleForFair,scheduleIssues,scheduleReadiness,productionActions,dateOnly,daysUntil,relativeDate,formatDate,formatTimeAgo,greeting,talentMissing,talentReadiness,taskRisk,fairReadiness,seasonReadiness,nextFair,dueTasks,completedThisWeek,followUps,notifications,fairStatus,search,activityFor,related};
 })();

@@ -1,3 +1,4 @@
-OATF OS — Production Board
-Version: 0.03
-Portal: Shared production workspace
+OATF OS — Production
+Version: 0.04
+Portal: Shared Production workspace
+Admin: Separate private portal (not included)

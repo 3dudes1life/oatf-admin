@@ -1,239 +1,216 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#09070d">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="OATF OS">
-  <meta name="description" content="OATF OS Production Board — the shared local-first workspace for Out at the Fair production.">
-  <title>OATF OS · Production Board</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/css/app.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<meta content="#09070d" name="theme-color"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="OATF OS" name="apple-mobile-web-app-title"/>
+<meta content="OATF OS Production — connected fair production, run-of-show intelligence, and day-of command." name="description"/>
+<title>OATF OS · Production · V0.04</title>
+<link href="manifest.webmanifest" rel="manifest"/>
+<link href="assets/icons/icon.svg" rel="icon" type="image/svg+xml"/>
+<link href="assets/css/app.css" rel="stylesheet"/>
 </head>
 <body>
-  <div class="login-shell" id="loginScreen">
-    <div class="orb orb-one"></div>
-    <div class="orb orb-two"></div>
-    <section class="login-card">
-      <div class="brand-row">
-        <div class="brand-mark">OATF</div>
-        <div><strong>OATF OS</strong><span>Production Board</span></div>
-      </div>
-      <div class="login-copy">
-        <span class="eyebrow">Private production workspace</span>
-        <h1>Run every fair from one calm, connected place.</h1>
-        <p>Shared by William and Spencer. Production work only—no budgets, fair payments, negotiations, or executive information.</p>
-      </div>
-      <div class="login-user-grid" role="group" aria-label="Choose workspace identity">
-        <button class="login-user active" data-login-user="Spencer"><span>S</span><b>Spencer</b><small>Production</small></button>
-        <button class="login-user" data-login-user="William"><span>W</span><b>William</b><small>Board</small></button>
-      </div>
-      <button class="button primary full" id="enterBoard">Enter Production Board</button>
-      <small class="privacy-note">Local-first preview. Data remains in this browser until a backend is intentionally connected.</small>
-    </section>
-  </div>
-
-  <div class="app-shell hidden" id="appShell">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-head">
-        <button class="brand-button" data-view="today" aria-label="Go to Today">
-          <span class="brand-mark small">OATF</span>
-          <span><strong>OATF OS</strong><small>Production Board</small></span>
-        </button>
-        <button class="icon-button collapse-sidebar" id="collapseSidebar" aria-label="Collapse sidebar">‹</button>
-      </div>
-
-      <nav class="main-nav" aria-label="Main navigation">
-        <button class="nav-link active" data-view="today"><span>⌂</span><b>Today</b><em id="todayBadge"></em></button>
-        <button class="nav-link" data-view="mywork"><span>✓</span><b>My Work</b><em id="myWorkBadge"></em></button>
-        <button class="nav-link" data-view="fairs"><span>🎡</span><b>Fairs</b></button>
-        <button class="nav-link" data-view="talent"><span>◉</span><b>Talent</b></button>
-        <button class="nav-link" data-view="contacts"><span>◎</span><b>Contacts</b></button>
-        <button class="nav-link" data-view="followups"><span>↗</span><b>Follow-Up</b><em id="followUpBadge"></em></button>
-        <button class="nav-link" data-view="tasks"><span>☑</span><b>Tasks</b></button>
-        <button class="nav-link" data-view="calendar"><span>▦</span><b>Calendar</b></button>
-        <button class="nav-link" data-view="files"><span>▣</span><b>Files</b></button>
-        <button class="nav-link" data-view="activity"><span>↻</span><b>Activity</b></button>
-        <button class="nav-link dayof-link" data-view="dayof"><span>⚡</span><b>Day-of</b></button>
-      </nav>
-
-      <section class="sidebar-section favorites-section">
-        <div class="sidebar-label"><span>Favorites</span><button id="manageFavorites" aria-label="Manage favorites">＋</button></div>
-        <div class="favorite-list" id="sidebarFavorites"></div>
-      </section>
-
-      <section class="sidebar-section recent-section">
-        <div class="sidebar-label"><span>Recently viewed</span></div>
-        <div class="recent-list" id="sidebarRecent"></div>
-      </section>
-
-      <div class="sidebar-foot">
-        <button class="user-switcher" id="userSwitcher">
-          <span class="avatar" id="sidebarAvatar">S</span>
-          <span><strong id="sidebarUserName">Spencer</strong><small>Production workspace</small></span>
-          <i>⌄</i>
-        </button>
-        <div class="user-menu" id="userMenu">
-          <button data-switch-user="Spencer"><span class="avatar tiny">S</span><span><b>Spencer</b><small>Production</small></span></button>
-          <button data-switch-user="William"><span class="avatar tiny william">W</span><span><b>William</b><small>Board</small></span></button>
-          <hr>
-          <button data-action="export"><span>⇩</span><span><b>Export backup</b><small>Download JSON</small></span></button>
-          <button data-action="import"><span>⇧</span><span><b>Import backup</b><small>Restore JSON</small></span></button>
-        </div>
-      </div>
-    </aside>
-
-    <main class="app-main">
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="icon-button mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button>
-          <div class="page-heading"><span id="pageEyebrow">Production Board</span><h2 id="pageTitle">Today</h2></div>
-        </div>
-        <div class="topbar-actions">
-          <button class="search-trigger" id="searchTrigger"><span>⌕</span><b>Search everything</b><kbd>⌘ K</kbd></button>
-          <span class="save-state" id="saveState"><i></i><b>Saved</b></span>
-          <button class="icon-button notification-button" id="notificationButton" aria-label="Notifications"><span>◔</span><em id="notificationCount"></em></button>
-          <button class="button primary quick-add" id="quickAdd"><span>＋</span><b>New</b></button>
-          <button class="top-profile" id="topProfile"><span class="avatar" id="topAvatar">S</span></button>
-        </div>
-      </header>
-
-      <div class="view-stack">
-        <section class="view active" id="view-today" data-title="Today" data-eyebrow="Production Board">
-          <div id="todayContent"></div>
-        </section>
-
-        <section class="view" id="view-mywork" data-title="My Work" data-eyebrow="Personal production queue">
-          <div id="myWorkContent"></div>
-        </section>
-
-        <section class="view" id="view-fairs" data-title="Fair Workspaces" data-eyebrow="Connected production records">
-          <div class="view-intro">
-            <div><span class="eyebrow">Shared production spaces</span><h1>Fair Workspaces</h1><p>Every task, performer, contact, deadline, file, and note stays connected to its fair.</p></div>
-            <button class="button primary" data-create="fair">＋ Add Fair</button>
-          </div>
-          <div class="fair-card-grid" id="fairGrid"></div>
-        </section>
-
-        <section class="view" id="view-talent" data-title="Talent" data-eyebrow="Performer readiness">
-          <div class="view-intro">
-            <div><span class="eyebrow">Connected talent records</span><h1>Talent</h1><p>Track readiness, music, bios, photos, parking, arrival details, and linked production work.</p></div>
-            <button class="button primary" data-create="talent">＋ Add Talent</button>
-          </div>
-          <div class="toolbar" id="talentToolbar"></div>
-          <div class="record-grid" id="talentGrid"></div>
-        </section>
-
-        <section class="view" id="view-contacts" data-title="Contacts" data-eyebrow="Production relationships">
-          <div class="view-intro">
-            <div><span class="eyebrow">Production contact book</span><h1>Contacts</h1><p>Fair partners, talent managers, performers, vendors, and production contacts—with follow-up memory built in.</p></div>
-            <button class="button primary" data-create="contact">＋ Add Contact</button>
-          </div>
-          <div class="toolbar" id="contactToolbar"></div>
-          <div class="contact-grid" id="contactGrid"></div>
-        </section>
-
-        <section class="view" id="view-followups" data-title="Follow-Up" data-eyebrow="Waiting and outreach">
-          <div id="followUpContent"></div>
-        </section>
-
-        <section class="view" id="view-tasks" data-title="Task Board" data-eyebrow="Production workflow">
-          <div class="view-intro compact-intro">
-            <div><span class="eyebrow">Connected work</span><h1>Task Board</h1><p>Drag work forward, expose blockers, and keep ownership clear.</p></div>
-            <button class="button primary" data-create="task">＋ New Task</button>
-          </div>
-          <div class="toolbar" id="taskToolbar"></div>
-          <div class="kanban" id="taskBoard"></div>
-        </section>
-
-        <section class="view" id="view-calendar" data-title="Calendar" data-eyebrow="Deadlines and production dates">
-          <div class="view-intro compact-intro">
-            <div><span class="eyebrow">Production calendar</span><h1>Deadlines</h1><p>See pressure before it becomes a day-of problem.</p></div>
-            <button class="button primary" data-create="deadline">＋ Add Deadline</button>
-          </div>
-          <div class="calendar-shell">
-            <div class="calendar-head"><button class="icon-button" id="calendarPrev">‹</button><h3 id="calendarTitle"></h3><button class="icon-button" id="calendarNext">›</button></div>
-            <div class="calendar-grid weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
-            <div class="calendar-grid days" id="calendarDays"></div>
-          </div>
-        </section>
-
-        <section class="view" id="view-files" data-title="Files" data-eyebrow="Production assets">
-          <div class="view-intro compact-intro">
-            <div><span class="eyebrow">Connected file index</span><h1>Files</h1><p>Track where the latest production assets belong. Actual uploads connect later.</p></div>
-            <button class="button primary" data-create="file">＋ Add File Record</button>
-          </div>
-          <div class="toolbar" id="fileToolbar"></div>
-          <div class="file-list" id="fileList"></div>
-        </section>
-
-        <section class="view" id="view-activity" data-title="Activity" data-eyebrow="Complete production history">
-          <div class="view-intro compact-intro"><div><span class="eyebrow">Timeline</span><h1>Activity</h1><p>Every meaningful local change is recorded and connected to its source.</p></div></div>
-          <div class="activity-feed full-feed" id="activityFeed"></div>
-        </section>
-
-        <section class="view" id="view-dayof" data-title="Day-of Mode" data-eyebrow="Live production">
-          <div id="dayOfContent"></div>
-        </section>
-      </div>
-    </main>
-
-    <nav class="mobile-dock" aria-label="Mobile navigation">
-      <button class="active" data-view="today"><span>⌂</span><b>Today</b></button>
-      <button data-view="mywork"><span>✓</span><b>My Work</b></button>
-      <button data-view="fairs"><span>🎡</span><b>Fairs</b></button>
-      <button data-view="talent"><span>◉</span><b>Talent</b></button>
-      <button id="mobileMore"><span>•••</span><b>More</b></button>
-    </nav>
-  </div>
-
-  <div class="scrim" id="scrim"></div>
-
-  <aside class="detail-drawer" id="detailDrawer" aria-hidden="true">
-    <header class="drawer-head">
-      <button class="icon-button" id="closeDrawer" aria-label="Close details">×</button>
-      <div class="drawer-actions"><button class="icon-button favorite-button" id="drawerFavorite" aria-label="Favorite">☆</button><button class="button ghost small-button" id="drawerEdit">Edit</button></div>
-    </header>
-    <div id="drawerContent"></div>
-  </aside>
-
-  <div class="search-overlay" id="searchOverlay" aria-hidden="true">
-    <section class="search-panel">
-      <div class="search-input-row"><span>⌕</span><input id="globalSearch" autocomplete="off" placeholder="Search fairs, talent, tasks, contacts, files…"><kbd>ESC</kbd></div>
-      <div class="search-hints"><span>Try “Orange County”</span><span>Try “missing music”</span><span>Try “Spencer tasks”</span></div>
-      <div class="search-results" id="searchResults"></div>
-    </section>
-  </div>
-
-  <div class="popover notification-popover" id="notificationPopover">
-    <div class="popover-head"><div><span class="eyebrow">Local notifications</span><h3>Needs attention</h3></div><button class="text-button" id="clearNotifications">Clear</button></div>
-    <div id="notificationList"></div>
-  </div>
-
-  <div class="popover quick-popover" id="quickPopover">
-    <button data-create="task"><span>☑</span><div><b>New task</b><small>Assign production work</small></div></button>
-    <button data-create="talent"><span>◉</span><div><b>Add talent</b><small>Create performer record</small></div></button>
-    <button data-create="contact"><span>◎</span><div><b>Add contact</b><small>Fair, talent, or vendor</small></div></button>
-    <button data-create="deadline"><span>▦</span><div><b>Add deadline</b><small>Create calendar pressure point</small></div></button>
-    <button data-create="note"><span>✎</span><div><b>Add note</b><small>Connect shared context</small></div></button>
-  </div>
-
-  <div class="modal-shell" id="modalShell" aria-hidden="true">
-    <section class="modal-card">
-      <header><div><span class="eyebrow" id="modalEyebrow">Create</span><h2 id="modalTitle">New record</h2></div><button class="icon-button" id="modalClose">×</button></header>
-      <form id="recordForm"><div class="form-body" id="formBody"></div><footer><button type="button" class="button ghost" id="modalCancel">Cancel</button><button class="button primary" type="submit">Save</button></footer></form>
-    </section>
-  </div>
-
-  <div class="toast" id="toast"><div><b id="toastTitle"></b><span id="toastMessage"></span></div><button id="toastUndo">Undo</button></div>
-  <input type="file" id="importInput" accept="application/json" hidden>
-
-  <script src="assets/js/store.js"></script>
-  <script src="assets/js/intelligence.js"></script>
-  <script src="assets/js/ui.js"></script>
-  <script src="assets/js/app.js"></script>
+<div class="login-shell" id="loginScreen">
+<div class="orb orb-one"></div>
+<div class="orb orb-two"></div>
+<section class="login-card">
+<div class="brand-row">
+<div class="brand-mark">OATF</div>
+<div><strong>OATF OS</strong><span>Production Board</span></div>
+</div>
+<div class="login-copy">
+<span class="eyebrow">Private production workspace</span>
+<h1>Run every fair from one calm, connected place.</h1>
+<p>Shared production workspace for William and Spencer. No budgets, fair payments, negotiations, private contracts, or executive information.</p>
+</div>
+<div aria-label="Choose workspace identity" class="login-user-grid" role="group"><button class="login-user active production-login" data-login-user="Production"><span>P</span><b>Production</b><small>Shared Production Board</small></button></div><div class="admin-separation-note"><span>Private layer</span><b>OATF Admin is a separate portal</b><small>Admin access and its password will not live inside this Production build.</small></div>
+<button class="button primary full" id="enterBoard">Enter Production Board</button>
+<small class="privacy-note">Local-first preview. Data remains in this browser until a backend is intentionally connected.</small>
+</section>
+</div>
+<div class="app-shell hidden" id="appShell">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head">
+<button aria-label="Go to Today" class="brand-button" data-view="today">
+<span class="brand-mark small">OATF</span>
+<span><strong>OATF OS</strong><small>Production Board</small></span>
+</button>
+<button aria-label="Collapse sidebar" class="icon-button collapse-sidebar" id="collapseSidebar">‹</button>
+</div>
+<nav aria-label="Main navigation" class="main-nav">
+<button class="nav-link active" data-view="today"><span>⌂</span><b>Today</b><em id="todayBadge"></em></button>
+<button class="nav-link" data-view="mywork"><span>✓</span><b>Action Board</b><em id="myWorkBadge"></em></button>
+<button class="nav-link" data-view="fairs"><span>🎡</span><b>Fairs</b></button>
+<button class="nav-link" data-view="talent"><span>◉</span><b>Talent</b></button>
+<button class="nav-link" data-view="contacts"><span>◎</span><b>Contacts</b></button>
+<button class="nav-link" data-view="followups"><span>↗</span><b>Follow-Up</b><em id="followUpBadge"></em></button>
+<button class="nav-link" data-view="tasks"><span>☑</span><b>Tasks</b></button>
+<button class="nav-link" data-view="calendar"><span>▦</span><b>Calendar</b></button><button class="nav-link" data-view="schedule"><span>≡</span><b>Run of Show</b><em id="scheduleBadge"></em></button>
+<button class="nav-link" data-view="files"><span>▣</span><b>Files</b></button>
+<button class="nav-link" data-view="activity"><span>↻</span><b>Activity</b></button>
+<button class="nav-link dayof-link" data-view="dayof"><span>⚡</span><b>Day-of</b></button>
+</nav>
+<section class="sidebar-section favorites-section">
+<div class="sidebar-label"><span>Favorites</span><button aria-label="Manage favorites" id="manageFavorites">＋</button></div>
+<div class="favorite-list" id="sidebarFavorites"></div>
+</section>
+<section class="sidebar-section recent-section">
+<div class="sidebar-label"><span>Recently viewed</span></div>
+<div class="recent-list" id="sidebarRecent"></div>
+</section>
+<div class="sidebar-foot">
+<button class="user-switcher" id="userSwitcher">
+<span class="avatar" id="sidebarAvatar">P</span>
+<span><strong id="sidebarUserName">Production</strong><small>Shared workspace</small></span>
+<i>⌄</i>
+</button>
+<div class="user-menu" id="userMenu">
+<div class="menu-identity"><span class="avatar tiny">P</span><span><b>Production</b><small>Shared William + Spencer workspace</small></span></div>
+<hr/>
+<button data-action="export"><span>⇩</span><span><b>Export backup</b><small>Download JSON</small></span></button>
+<button data-action="import"><span>⇧</span><span><b>Import backup</b><small>Restore JSON</small></span></button>
+</div>
+</div>
+</aside>
+<main class="app-main">
+<header class="topbar">
+<div class="topbar-left">
+<button aria-label="Open menu" class="icon-button mobile-menu" id="mobileMenu">☰</button>
+<div class="page-heading"><span id="pageEyebrow">Production Board</span><h2 id="pageTitle">Today</h2></div>
+</div>
+<div class="topbar-actions">
+<button class="search-trigger" id="searchTrigger"><span>⌕</span><b>Search everything</b><kbd>⌘ K</kbd></button>
+<span class="save-state" id="saveState"><i></i><b>Saved</b></span>
+<button aria-label="Notifications" class="icon-button notification-button" id="notificationButton"><span>◔</span><em id="notificationCount"></em></button>
+<button class="button primary quick-add" id="quickAdd"><span>＋</span><b>New</b></button>
+<button class="top-profile" id="topProfile"><span class="avatar" id="topAvatar">P</span></button>
+</div>
+</header>
+<div class="view-stack">
+<section class="view active" data-eyebrow="Production Board" data-title="Today" id="view-today">
+<div id="todayContent"></div>
+</section>
+<section class="view" data-eyebrow="Production-wide priorities" data-title="Action Board" id="view-mywork">
+<div id="myWorkContent"></div>
+</section>
+<section class="view" data-eyebrow="Connected production records" data-title="Fair Workspaces" id="view-fairs">
+<div class="view-intro">
+<div><span class="eyebrow">Shared production spaces</span><h1>Fair Workspaces</h1><p>Every task, performer, contact, deadline, file, and note stays connected to its fair.</p></div>
+<button class="button primary" data-create="fair">＋ Add Fair</button>
+</div>
+<div class="fair-card-grid" id="fairGrid"></div>
+</section>
+<section class="view" data-eyebrow="Performer readiness" data-title="Talent" id="view-talent">
+<div class="view-intro">
+<div><span class="eyebrow">Connected talent records</span><h1>Talent</h1><p>Track readiness, music, bios, photos, parking, arrival details, and linked production work.</p></div>
+<button class="button primary" data-create="talent">＋ Add Talent</button>
+</div>
+<div class="toolbar" id="talentToolbar"></div>
+<div class="record-grid" id="talentGrid"></div>
+</section>
+<section class="view" data-eyebrow="Production relationships" data-title="Contacts" id="view-contacts">
+<div class="view-intro">
+<div><span class="eyebrow">Production contact book</span><h1>Contacts</h1><p>Fair partners, talent managers, performers, vendors, and production contacts—with follow-up memory built in.</p></div>
+<button class="button primary" data-create="contact">＋ Add Contact</button>
+</div>
+<div class="toolbar" id="contactToolbar"></div>
+<div class="contact-grid" id="contactGrid"></div>
+</section>
+<section class="view" data-eyebrow="Waiting and outreach" data-title="Follow-Up" id="view-followups">
+<div id="followUpContent"></div>
+</section>
+<section class="view" data-eyebrow="Production workflow" data-title="Task Board" id="view-tasks">
+<div class="view-intro compact-intro">
+<div><span class="eyebrow">Connected work</span><h1>Task Board</h1><p>Drag work forward, expose blockers, and keep ownership clear.</p></div>
+<button class="button primary" data-create="task">＋ New Task</button>
+</div>
+<div class="toolbar" id="taskToolbar"></div>
+<div class="kanban" id="taskBoard"></div>
+</section>
+<section class="view" data-eyebrow="Deadlines and production dates" data-title="Calendar" id="view-calendar">
+<div class="view-intro compact-intro">
+<div><span class="eyebrow">Production calendar</span><h1>Deadlines</h1><p>See pressure before it becomes a day-of problem.</p></div>
+<button class="button primary" data-create="deadline">＋ Add Deadline</button>
+</div>
+<div class="calendar-shell">
+<div class="calendar-head"><button class="icon-button" id="calendarPrev">‹</button><h3 id="calendarTitle"></h3><button class="icon-button" id="calendarNext">›</button></div>
+<div class="calendar-grid weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+<div class="calendar-grid days" id="calendarDays"></div>
+</div>
+</section><section class="view" data-eyebrow="Schedule intelligence" data-title="Run of Show" id="view-schedule">
+<div class="view-intro compact-intro">
+<div><span class="eyebrow">Production schedule engine</span><h1>Run of Show</h1><p>Build public and internal schedules, expose conflicts, protect transitions, and prepare day-of operations.</p></div>
+<button class="button primary" data-create="schedule">＋ Add Stage Block</button>
+</div>
+<div id="scheduleContent"></div>
+</section>
+<section class="view" data-eyebrow="Production assets" data-title="Files" id="view-files">
+<div class="view-intro compact-intro">
+<div><span class="eyebrow">Connected file index</span><h1>Files</h1><p>Track where the latest production assets belong. Actual uploads connect later.</p></div>
+<button class="button primary" data-create="file">＋ Add File Record</button>
+</div>
+<div class="toolbar" id="fileToolbar"></div>
+<div class="file-list" id="fileList"></div>
+</section>
+<section class="view" data-eyebrow="Complete production history" data-title="Activity" id="view-activity">
+<div class="view-intro compact-intro"><div><span class="eyebrow">Timeline</span><h1>Activity</h1><p>Every meaningful local change is recorded and connected to its source.</p></div></div>
+<div class="activity-feed full-feed" id="activityFeed"></div>
+</section>
+<section class="view" data-eyebrow="Live production" data-title="Day-of Mode" id="view-dayof">
+<div id="dayOfContent"></div>
+</section>
+</div>
+</main>
+<nav aria-label="Mobile navigation" class="mobile-dock">
+<button class="active" data-view="today"><span>⌂</span><b>Today</b></button>
+<button data-view="mywork"><span>✓</span><b>Actions</b></button>
+<button data-view="fairs"><span>🎡</span><b>Fairs</b></button>
+<button data-view="talent"><span>◉</span><b>Talent</b></button>
+<button id="mobileMore"><span>•••</span><b>More</b></button>
+</nav>
+</div>
+<div class="scrim" id="scrim"></div>
+<aside aria-hidden="true" class="detail-drawer" id="detailDrawer">
+<header class="drawer-head">
+<button aria-label="Close details" class="icon-button" id="closeDrawer">×</button>
+<div class="drawer-actions"><button aria-label="Favorite" class="icon-button favorite-button" id="drawerFavorite">☆</button><button class="button ghost small-button" id="drawerEdit">Edit</button></div>
+</header>
+<div id="drawerContent"></div>
+</aside>
+<div aria-hidden="true" class="search-overlay" id="searchOverlay">
+<section class="search-panel">
+<div class="search-input-row"><span>⌕</span><input autocomplete="off" id="globalSearch" placeholder="Search fairs, talent, tasks, contacts, files…"/><kbd>ESC</kbd></div>
+<div class="search-hints"><span>Try “Orange County”</span><span>Try “missing music”</span><span>Try “schedule conflict”</span></div>
+<div class="search-results" id="searchResults"></div>
+</section>
+</div>
+<div class="popover notification-popover" id="notificationPopover">
+<div class="popover-head"><div><span class="eyebrow">Local notifications</span><h3>Needs attention</h3></div><button class="text-button" id="clearNotifications">Clear</button></div>
+<div id="notificationList"></div>
+</div>
+<div class="popover quick-popover" id="quickPopover"><button data-create="schedule"><span>≡</span><div><b>Add stage block</b><small>Build the run of show</small></div></button>
+<button data-create="task"><span>☑</span><div><b>New task</b><small>Assign production work</small></div></button>
+<button data-create="talent"><span>◉</span><div><b>Add talent</b><small>Create performer record</small></div></button>
+<button data-create="contact"><span>◎</span><div><b>Add contact</b><small>Fair, talent, or vendor</small></div></button>
+<button data-create="deadline"><span>▦</span><div><b>Add deadline</b><small>Create calendar pressure point</small></div></button>
+<button data-create="note"><span>✎</span><div><b>Add note</b><small>Connect shared context</small></div></button>
+</div>
+<div aria-hidden="true" class="modal-shell" id="modalShell">
+<section class="modal-card">
+<header><div><span class="eyebrow" id="modalEyebrow">Create</span><h2 id="modalTitle">New record</h2></div><button class="icon-button" id="modalClose">×</button></header>
+<form id="recordForm"><div class="form-body" id="formBody"></div><footer><button class="button ghost" id="modalCancel" type="button">Cancel</button><button class="button primary" type="submit">Save</button></footer></form>
+</section>
+</div>
+<div class="toast" id="toast"><div><b id="toastTitle"></b><span id="toastMessage"></span></div><button id="toastUndo">Undo</button></div>
+<input accept="application/json" hidden="" id="importInput" type="file"/>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/intelligence.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/app.js"></script>
 </body>
 </html>

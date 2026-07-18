@@ -1,17 +1,17 @@
 (() => {
   'use strict';
 
-  const STORAGE_KEY = 'oatf-os-production-v003';
-  const LEGACY_KEYS = ['oatf-admin-v002','oatf-admin-v001'];
+  const STORAGE_KEY = 'oatf-os-production-v004';
+  const LEGACY_KEYS = ['oatf-os-production-v003','oatf-admin-v002','oatf-admin-v001'];
   const SESSION_KEY = 'oatf-os-session';
 
   const nowISO = () => new Date().toISOString();
   const uid = prefix => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
 
   const seed = {
-    meta:{version:'0.03',portal:'production',createdAt:'2026-07-18T16:00:00-07:00'},
-    currentUser:'Spencer',
-    preferences:{lastView:'today',lastRecord:null,sidebarCollapsed:false,lastSearch:'',dismissedNotifications:[]},
+    meta:{version:'0.04',portal:'production',createdAt:'2026-07-18T16:00:00-07:00'},
+    currentUser:'Production',
+    preferences:{lastView:'today',lastRecord:null,sidebarCollapsed:false,lastSearch:'',dismissedNotifications:[],scheduleFairId:'fair-oc',scheduleMode:'internal',dayOfFairId:'fair-oc',dayOfSlotId:'schedule-oc-gss',dayOfChecks:{}},
     recentViewed:[],
     fairs:[
       {id:'fair-riv',name:'Riverside County Fair',short:'Riverside',code:'RIV',date:'2027-02-20',location:'Indio, CA',venue:'National Date Festival',stage:'Main Stage',status:'On track',summary:'Early-season production workspace for Riverside County Fair.',accent:'#ff7b56',favoriteBy:['William'],createdAt:'2026-07-10T09:00:00-07:00',updatedAt:'2026-07-17T13:30:00-07:00'},
@@ -41,6 +41,18 @@
       {id:'task-sd-offers',title:'Send San Diego offer confirmations',fairId:'fair-sd',talentId:'',contactId:'contact-sd',owner:'William',status:'inprogress',priority:'High',impact:'High',due:'2026-07-22',blockedBy:'',estimatedHours:3,description:'Confirm the remaining 2027 talent lineup.',createdAt:'2026-07-11T08:30:00-07:00',updatedAt:'2026-07-18T09:40:00-07:00'},
       {id:'task-riv-list',title:'Build Riverside talent target list',fairId:'fair-riv',talentId:'',contactId:'',owner:'Spencer',status:'todo',priority:'Medium',impact:'Medium',due:'2026-07-29',blockedBy:'',estimatedHours:2,description:'Prepare the first outreach list for Riverside.',createdAt:'2026-07-15T13:00:00-07:00',updatedAt:'2026-07-15T13:00:00-07:00'},
       {id:'task-branding',title:'Confirm OC stage branding inventory',fairId:'fair-oc',talentId:'',contactId:'contact-oc',owner:'William',status:'complete',priority:'Medium',impact:'High',due:'2026-07-17',blockedBy:'',estimatedHours:1,description:'Confirm flags, pennants, and backdrop inventory.',createdAt:'2026-07-10T12:00:00-07:00',updatedAt:'2026-07-17T15:00:00-07:00',completedAt:'2026-07-17T15:00:00-07:00'}
+    ],
+
+    schedules:[
+      {id:'schedule-oc-welcome',fairId:'fair-oc',title:'Host Welcome',publicTitle:'Welcome to Out at the Fair',talentId:'',kind:'Host / Emcee',startTime:'12:00',endTime:'12:10',bufferAfter:5,publicVisible:true,status:'Locked',internalNotes:'Opening welcome, safety language, and sponsor acknowledgements.',order:10,createdAt:'2026-07-18T16:00:00-07:00',updatedAt:'2026-07-18T16:00:00-07:00'},
+      {id:'schedule-oc-gss',fairId:'fair-oc',title:'Golden State Squares',publicTitle:'Golden State Squares',talentId:'talent-gss',kind:'Performance',startTime:'12:15',endTime:'12:55',bufferAfter:5,publicVisible:true,status:'Needs review',internalNotes:'Confirm floor is cleared before the group enters.',order:20,createdAt:'2026-07-18T16:00:00-07:00',updatedAt:'2026-07-18T16:00:00-07:00'},
+      {id:'schedule-oc-story',fairId:'fair-oc',title:'OATF Story Time',publicTitle:'OATF Story Time featuring Summer Daze',talentId:'talent-summer',kind:'Story Time',startTime:'13:00',endTime:'13:20',bufferAfter:10,publicVisible:true,status:'At risk',internalNotes:'Chair preset. Handheld mic. Agreement and playback still pending.',order:30,createdAt:'2026-07-18T16:00:00-07:00',updatedAt:'2026-07-18T16:00:00-07:00'},
+      {id:'schedule-oc-community',fairId:'fair-oc',title:'Community Stage Block',publicTitle:'Community Celebration',talentId:'',kind:'Community',startTime:'13:30',endTime:'14:10',bufferAfter:10,publicVisible:true,status:'Draft',internalNotes:'Final participant list not yet locked.',order:40,createdAt:'2026-07-18T16:00:00-07:00',updatedAt:'2026-07-18T16:00:00-07:00'},
+      {id:'schedule-oc-glam',fairId:'fair-oc',title:'OATF Glam Show',publicTitle:'OATF Glam Show',talentId:'talent-summer',kind:'Glam Show',startTime:'17:00',endTime:'17:45',bufferAfter:15,publicVisible:true,status:'At risk',internalNotes:'Final lineup and music order must be locked.',order:50,createdAt:'2026-07-18T16:00:00-07:00',updatedAt:'2026-07-18T16:00:00-07:00'},
+      {id:'schedule-sd-open',fairId:'fair-sd',title:'Opening Ceremony',publicTitle:'Opening Ceremony',talentId:'',kind:'Host / Emcee',startTime:'11:00',endTime:'11:10',bufferAfter:0,publicVisible:true,status:'Draft',internalNotes:'Emcee welcome and fair acknowledgements.',order:10,createdAt:'2026-07-18T16:00:00-07:00',updatedAt:'2026-07-18T16:00:00-07:00'},
+      {id:'schedule-sd-nicole',fairId:'fair-sd',title:'Nicole & Scotty',publicTitle:'Nicole & Scotty',talentId:'talent-nicole',kind:'Performance',startTime:'13:30',endTime:'14:10',bufferAfter:15,publicVisible:true,status:'At risk',internalNotes:'Availability, bio, photo, and final production details remain open.',order:20,createdAt:'2026-07-18T16:00:00-07:00',updatedAt:'2026-07-18T16:00:00-07:00'},
+      {id:'schedule-sd-ross',fairId:'fair-sd',title:'Ross Alan',publicTitle:'Ross Alan',talentId:'talent-ross',kind:'Performance',startTime:'14:45',endTime:'15:25',bufferAfter:15,publicVisible:true,status:'Needs review',internalNotes:'Music still pending.',order:30,createdAt:'2026-07-18T16:00:00-07:00',updatedAt:'2026-07-18T16:00:00-07:00'},
+      {id:'schedule-riv-block',fairId:'fair-riv',title:'Programming Block',publicTitle:'Out at the Fair',talentId:'talent-hashtag',kind:'Performance',startTime:'12:00',endTime:'12:30',bufferAfter:15,publicVisible:true,status:'Draft',internalNotes:'Placeholder until the Riverside lineup is developed.',order:10,createdAt:'2026-07-18T16:00:00-07:00',updatedAt:'2026-07-18T16:00:00-07:00'}
     ],
     deadlines:[
       {id:'deadline-oc-review',title:'OC schedule review',date:'2026-07-19',fairId:'fair-oc',owner:'Spencer',kind:'Schedule',relatedType:'task',relatedId:'task-oc-schedule',createdAt:'2026-07-12T08:05:00-07:00',updatedAt:'2026-07-18T15:30:00-07:00'},
@@ -112,10 +124,27 @@
     state.issues = (legacy.issues || []).map((item,index) => ({id:String(item.id || index+1).startsWith('issue-') ? String(item.id) : `issue-legacy-${item.id || index+1}`,title:item.title || 'Issue',fairId:findFairId(state,item.fairId || item.fair),status:item.status || 'Open',owner:item.owner || 'Spencer',severity:item.severity || 'Medium',createdAt:normalizeDate(item.createdAt) || nowISO(),updatedAt:normalizeDate(item.updatedAt) || nowISO()}));
     state.activity = (legacy.activity || []).map((item,index) => ({id:String(item.id || index+1).startsWith('act-') ? String(item.id) : `act-legacy-${item.id || index+1}`,actor:item.actor || 'OATF',action:item.action || '',entityType:item.entityType || '',entityId:item.entityId || '',fairId:findFairId(state,item.fairId || item.context || ''),timestamp:normalizeDate(item.timestamp) || nowISO()}));
     state.contacts = clone(seed.contacts);
-    state.currentUser = legacy.currentUser || 'Spencer';
+    state.currentUser = 'Production';
     state.preferences = {...state.preferences,...(legacy.preferences || {})};
     state.recentViewed = legacy.recentViewed || [];
     return state;
+  }
+
+
+  function upgradeState(input){
+    const upgraded = input && typeof input === 'object' ? input : clone(seed);
+    upgraded.meta = {...(upgraded.meta || {}),version:'0.04',portal:'production'};
+    upgraded.currentUser = 'Production';
+    upgraded.preferences = {...seed.preferences,...(upgraded.preferences || {})};
+    upgraded.recentViewed = Array.isArray(upgraded.recentViewed) ? upgraded.recentViewed : [];
+    upgraded.schedules = Array.isArray(upgraded.schedules) && upgraded.schedules.length ? upgraded.schedules : clone(seed.schedules);
+    ['fairs','talent','contacts','tasks','files','schedules'].forEach(key => {
+      (upgraded[key] || []).forEach(item => {
+        const hadFavorite = Array.isArray(item.favoriteBy) && item.favoriteBy.length;
+        item.favoriteBy = hadFavorite ? ['Production'] : [];
+      });
+    });
+    return upgraded;
   }
 
   function validateState(state){
@@ -128,17 +157,18 @@
       const current = localStorage.getItem(STORAGE_KEY);
       if (current){
         const parsed = JSON.parse(current);
-        if (validateState(parsed)) return parsed;
+        if (validateState(parsed)) return upgradeState(parsed);
       }
       for (const key of LEGACY_KEYS){
         const raw = localStorage.getItem(key);
         if (!raw) continue;
         const migrated = migrateLegacy(JSON.parse(raw));
-        localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated));
-        return migrated;
+        const upgraded = upgradeState(migrated);
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(upgraded));
+        return upgraded;
       }
     }catch(error){ console.warn('OATF OS load failed',error); }
-    const fresh = clone(seed);
+    const fresh = upgradeState(clone(seed));
     localStorage.setItem(STORAGE_KEY,JSON.stringify(fresh));
     return fresh;
   }
@@ -167,7 +197,7 @@
   }
 
   function getCollection(type){
-    const map = {fair:'fairs',contact:'contacts',talent:'talent',task:'tasks',deadline:'deadlines',file:'files',note:'notes',issue:'issues',activity:'activity'};
+    const map = {fair:'fairs',contact:'contacts',talent:'talent',task:'tasks',schedule:'schedules',deadline:'deadlines',file:'files',note:'notes',issue:'issues',activity:'activity'};
     return state[map[type] || type];
   }
   function get(type,id){ return getCollection(type)?.find(item => item.id === id) || null; }
@@ -199,7 +229,7 @@
     state.activity = state.activity.slice(0,400);
     save();
   }
-  function setCurrentUser(name){ state.currentUser = name; save({immediate:true}); }
+  function setCurrentUser(){ state.currentUser = 'Production'; save({immediate:true}); }
   function setPreference(key,value){ state.preferences[key] = value; save(); }
   function addRecent(type,id){
     state.recentViewed = state.recentViewed.filter(item => !(item.type === type && item.id === id));
@@ -224,10 +254,7 @@
   function importData(data){
     const parsed = typeof data === 'string' ? JSON.parse(data) : data;
     if (!validateState(parsed)) throw new Error('This backup is not a valid OATF OS Production Board file.');
-    state = parsed;
-    state.meta = {...(state.meta || {}),version:'0.03',portal:'production'};
-    state.preferences = {...seed.preferences,...(state.preferences || {})};
-    state.recentViewed = state.recentViewed || [];
+    state = upgradeState(parsed);
     save({immediate:true});
   }
   function reset(){ state = clone(seed); save({immediate:true}); }

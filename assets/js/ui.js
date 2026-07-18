@@ -5,8 +5,8 @@
 
   const esc = value => String(value ?? '').replace(/[&<>'"]/g,char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[char]));
   const initials = name => String(name || '?').split(/\s+/).map(x => x[0]).join('').slice(0,2).toUpperCase();
-  const icon = type => ({fair:'🎡',talent:'◉',task:'☑',contact:'◎',file:'▣',deadline:'▦',note:'✎',issue:'⚡'}[type] || '•');
-  const typeLabel = type => ({fair:'Fair',talent:'Talent',task:'Task',contact:'Contact',file:'File',deadline:'Deadline',note:'Note',issue:'Issue'}[type] || type);
+  const icon = type => ({fair:'🎡',talent:'◉',task:'☑',contact:'◎',file:'▣',deadline:'▦',note:'✎',issue:'⚡',schedule:'≡'}[type] || '•');
+  const typeLabel = type => ({fair:'Fair',talent:'Talent',task:'Task',contact:'Contact',file:'File',deadline:'Deadline',note:'Note',issue:'Issue',schedule:'Stage Block'}[type] || type);
   const fairName = id => Store.get('fair',id)?.short || 'All fairs';
   const statusText = value => String(value || '').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/^./,x => x.toUpperCase());
 
@@ -94,6 +94,20 @@
         ])
       ].join('')
     };
+
+    if (type === 'schedule') return {
+      title:record.id ? 'Edit stage block' : 'Add stage block',
+      html:[
+        section('Stage block',[
+          field('title','Internal title','text',r.title || ''),field('publicTitle','Public title','text',r.publicTitle || '',[],{required:false}),field('fairId','Fair','select',r.fairId || Store.state.preferences.scheduleFairId || Store.state.fairs[0]?.id || '',fairOptions()),field('talentId','Linked talent','select',r.talentId || '',talentOptions('',true),{required:false}),field('kind','Block type','select',r.kind || 'Performance',['Performance','Host / Emcee','Story Time','Glam Show','Community','Break','Technical','Closing']),field('status','Production status','select',r.status || 'Draft',['Draft','Needs review','At risk','Locked','Ready'])
+        ]),
+        section('Timing',[
+          field('startTime','Start time','time',r.startTime || '12:00'),field('endTime','End time','time',r.endTime || '12:30'),field('bufferAfter','Required transition minutes','number',r.bufferAfter ?? 10),field('order','Sort order','number',r.order || 10),field('publicVisible','Public schedule','select',String(r.publicVisible ?? true),[{value:'true',label:'Show publicly'},{value:'false',label:'Internal only'}])
+        ]),
+        section('Production notes',[field('internalNotes','Internal notes','textarea',r.internalNotes || '',[],{full:true,required:false})])
+      ].join('')
+    };
+
     if (type === 'deadline') return {
       title:record.id ? 'Edit deadline' : 'Add deadline',
       html:[section('Deadline',[
@@ -144,6 +158,9 @@
       }else data[key]=value;
     }
     if ('estimatedHours' in data) data.estimatedHours = Number(data.estimatedHours || 1);
+    if ('bufferAfter' in data) data.bufferAfter = Number(data.bufferAfter || 0);
+    if ('order' in data) data.order = Number(data.order || 0);
+    if ('publicVisible' in data) data.publicVisible = data.publicVisible === 'true';
     return data;
   }
   function submitRecordForm(event){
@@ -179,6 +196,7 @@
     if (type === 'task') return `${item.owner} · ${Intel.relativeDate(item.due)}`;
     if (type === 'contact') return `${item.role} · ${item.organization}`;
     if (type === 'file') return `${item.type} · ${item.folder}`;
+    if (type === 'schedule') return `${Intel.formatClock(item.startTime)}–${Intel.formatClock(item.endTime)} · ${fairName(item.fairId)}`;
     if (type === 'deadline') return `${Intel.relativeDate(item.date)} · ${item.owner}`;
     if (type === 'note') return `${item.author} · ${Intel.formatTimeAgo(item.createdAt)}`;
     if (type === 'issue') return `${item.status} · ${item.owner}`;
@@ -234,6 +252,7 @@
       <div class="detail-card full"><span>Relationship notes</span><b>${esc(item.notes || 'No notes')}</b></div>
     </div>`;
     if (type === 'file') return `<div class="detail-grid"><div class="detail-card"><span>Type</span><b>${esc(item.type)}</b></div><div class="detail-card"><span>Folder</span><b>${esc(item.folder)}</b></div><div class="detail-card"><span>Owner</span><b>${esc(item.owner)}</b></div><div class="detail-card"><span>Updated</span><b>${esc(Intel.formatTimeAgo(item.updatedAt))}</b></div><div class="detail-card full"><span>Notes</span><b>${esc(item.notes || 'No notes')}</b><p>This version indexes the file record. Actual uploads connect later.</p></div></div>`;
+    if (type === 'schedule') { const talent=item.talentId?Store.get('talent',item.talentId):null; const issues=Intel.scheduleIssues(item.fairId).filter(x=>x.slotId===item.id); return `<div class="detail-grid"><div class="detail-card"><span>Stage time</span><b>${esc(Intel.formatClock(item.startTime))}–${esc(Intel.formatClock(item.endTime))}</b><p>${Number(item.bufferAfter||0)} minute transition required</p></div><div class="detail-card"><span>Status</span><b>${esc(item.status)}</b><p>${esc(item.kind)}</p></div><div class="detail-card"><span>Public title</span><b>${esc(item.publicTitle||'Internal only')}</b></div><div class="detail-card"><span>Talent</span><b>${esc(talent?.name||'No linked talent')}</b></div><div class="detail-card full"><span>Schedule intelligence</span><b>${issues.length?esc(issues.map(x=>x.title).join(' · ')):'No conflicts detected'}</b></div><div class="detail-card full"><span>Internal notes</span><b>${esc(item.internalNotes||'No notes')}</b></div></div>`; }
     if (type === 'deadline') return `<div class="detail-grid"><div class="detail-card"><span>Date</span><b>${esc(Intel.formatDate(item.date))}</b><p>${esc(Intel.relativeDate(item.date))}</p></div><div class="detail-card"><span>Owner</span><b>${esc(item.owner)}</b></div><div class="detail-card"><span>Type</span><b>${esc(item.kind)}</b></div><div class="detail-card"><span>Fair</span><b>${esc(fair?.name || 'Not assigned')}</b></div></div>`;
     if (type === 'note') return `<div class="detail-grid"><div class="detail-card"><span>Author</span><b>${esc(item.author)}</b></div><div class="detail-card"><span>Created</span><b>${esc(Intel.formatTimeAgo(item.createdAt))}</b></div><div class="detail-card full"><span>Note</span><b>${esc(item.body)}</b></div></div>`;
     if (type === 'issue') return `<div class="detail-grid"><div class="detail-card"><span>Status</span><b>${esc(item.status)}</b></div><div class="detail-card"><span>Severity</span><b>${esc(item.severity)}</b></div><div class="detail-card"><span>Owner</span><b>${esc(item.owner)}</b></div><div class="detail-card"><span>Fair</span><b>${esc(fair?.name || 'Not assigned')}</b></div></div>`;
@@ -252,7 +271,7 @@
     ];
     let body='';
     if (tab === 'overview') body=overviewHTML(type,item,related);
-    if (tab === 'work') body=`<div class="drawer-section"><div class="drawer-section-head"><h3>Tasks</h3><button class="text-button" data-create-related="task:${type}:${id}">＋ Add task</button></div><div class="related-list">${related.tasks.length?related.tasks.map(x=>relatedRow('task',x)).join(''):`<div class="empty-state"><div><b>No connected tasks</b><p>Create work directly from this record.</p></div></div>`}</div></div><div class="drawer-section"><div class="drawer-section-head"><h3>Talent</h3></div><div class="related-list">${related.talent.length?related.talent.map(x=>relatedRow('talent',x)).join(''):`<div class="empty-state"><div><b>No connected talent</b><p>Talent linked to this record will appear here.</p></div></div>`}</div></div><div class="drawer-section"><div class="drawer-section-head"><h3>Contacts</h3></div><div class="related-list">${related.contacts.length?related.contacts.map(x=>relatedRow('contact',x)).join(''):`<div class="empty-state"><div><b>No connected contacts</b><p>Link a fair or talent contact to this record.</p></div></div>`}</div></div>`;
+    if (tab === 'work') body=`<div class="drawer-section"><div class="drawer-section-head"><h3>Tasks</h3><button class="text-button" data-create-related="task:${type}:${id}">＋ Add task</button></div><div class="related-list">${related.tasks.length?related.tasks.map(x=>relatedRow('task',x)).join(''):`<div class="empty-state"><div><b>No connected tasks</b><p>Create work directly from this record.</p></div></div>`}</div></div><div class="drawer-section"><div class="drawer-section-head"><h3>Run of Show</h3><button class="text-button" data-create-related="schedule:${type}:${id}">＋ Add block</button></div><div class="related-list">${related.schedules?.length?related.schedules.map(x=>relatedRow('schedule',x)).join(''):`<div class="empty-state"><div><b>No connected stage blocks</b><p>Build the run of show from this record.</p></div></div>`}</div></div><div class="drawer-section"><div class="drawer-section-head"><h3>Talent</h3></div><div class="related-list">${related.talent.length?related.talent.map(x=>relatedRow('talent',x)).join(''):`<div class="empty-state"><div><b>No connected talent</b><p>Talent linked to this record will appear here.</p></div></div>`}</div></div><div class="drawer-section"><div class="drawer-section-head"><h3>Contacts</h3></div><div class="related-list">${related.contacts.length?related.contacts.map(x=>relatedRow('contact',x)).join(''):`<div class="empty-state"><div><b>No connected contacts</b><p>Link a fair or talent contact to this record.</p></div></div>`}</div></div>`;
     if (tab === 'files') body=`<div class="drawer-section"><div class="drawer-section-head"><h3>Files</h3><button class="text-button" data-create-related="file:${type}:${id}">＋ Add file record</button></div><div class="related-list">${related.files.length?related.files.map(x=>relatedRow('file',x)).join(''):`<div class="empty-state"><div><b>No connected files</b><p>Add a file record to keep production assets organized.</p></div></div>`}</div></div><div class="drawer-section"><div class="drawer-section-head"><h3>Deadlines</h3><button class="text-button" data-create-related="deadline:${type}:${id}">＋ Add deadline</button></div><div class="related-list">${related.deadlines.length?related.deadlines.map(x=>relatedRow('deadline',x)).join(''):`<div class="empty-state"><div><b>No connected deadlines</b><p>Deadline relationships will appear here.</p></div></div>`}</div></div>`;
     if (tab === 'timeline') body=timelineHTML(related.activity);
     if (tab === 'notes') body=notesHTML(type,id,related.notes);
