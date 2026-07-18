@@ -37,6 +37,14 @@
     const options = list.map(t => ({value:t.id,label:t.name}));
     return includeBlank ? [{value:'',label:'No linked talent'},...options] : options;
   }
+  function taskOptions(fairId='',currentId='',includeBlank=true){
+    let list = Store.state.tasks || [];
+    if (fairId) list = list.filter(task => task.fairId === fairId);
+    list = list.filter(task => task.id !== currentId);
+    const options = list.map(task => ({value:task.id,label:task.title}));
+    return includeBlank ? [{value:'',label:'No dependency'},...options] : options;
+  }
+
   function contactOptions(includeBlank=true){
     const options = Store.state.contacts.map(c => ({value:c.id,label:`${c.name} · ${c.organization}`}));
     return includeBlank ? [{value:'',label:'No linked contact'},...options] : options;
@@ -62,10 +70,10 @@
           field('title','Task title','text',r.title || ''),field('owner','Owner','select',r.owner || Store.state.currentUser,['Spencer','William','Fair Partner','Production']),field('fairId','Fair','select',r.fairId || '',fairOptions()),field('due','Due date','date',r.due || ''),field('status','Status','select',r.status || 'todo',[{value:'todo',label:'To Do'},{value:'inprogress',label:'In Progress'},{value:'waiting',label:'Waiting'},{value:'complete',label:'Complete'}]),field('priority','Priority','select',r.priority || 'Medium',['High','Medium','Low'])
         ]),
         section('Relationships',[
-          field('talentId','Linked talent','select',r.talentId || '',talentOptions('',true),{required:false}),field('contactId','Linked contact','select',r.contactId || '',contactOptions(true),{required:false}),field('blockedBy','Blocked by','text',r.blockedBy || '',[],{required:false}),field('estimatedHours','Estimated hours','number',r.estimatedHours || 1)
+          field('talentId','Linked talent','select',r.talentId || '',talentOptions('',true),{required:false}),field('contactId','Linked contact','select',r.contactId || '',contactOptions(true),{required:false}),field('dependsOnTaskId','Depends on task','select',r.dependsOnTaskId || '',taskOptions(r.fairId || '',r.id || '',true),{required:false}),field('blockedBy','External blocker','text',r.blockedBy || '',[],{required:false}),field('estimatedHours','Estimated hours','number',r.estimatedHours || 1)
         ]),
         section('Details',[
-          field('impact','Operational impact','select',r.impact || 'Medium',['High','Medium','Low']),field('description','Description','textarea',r.description || '',[],{full:true,required:false})
+          field('impact','Operational impact','select',r.impact || 'Medium',['High','Medium','Low']),field('phase','Production phase','select',r.phase || '',[{value:'',label:'Auto-detect'},{value:'foundation',label:'Foundation'},{value:'booking',label:'Booking'},{value:'materials',label:'Materials'},{value:'schedule',label:'Schedule'},{value:'dayof',label:'Day-of Prep'},{value:'closeout',label:'Closeout'}],{required:false}),field('description','Description','textarea',r.description || '',[],{full:true,required:false})
         ])
       ].join('')
     };

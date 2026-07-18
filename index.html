@@ -8,8 +8,8 @@
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="OATF OS" name="apple-mobile-web-app-title"/>
-<meta content="OATF OS Production — local-first production control, compliance rules, operational reports, and fair readiness intelligence." name="description"/>
-<title>OATF OS · Production · V0.05</title>
+<meta content="OATF OS Production — local-first workflow orchestration, readiness gates, playbooks, handoffs, and live fair production intelligence." name="description"/>
+<title>OATF OS · Production · V0.06</title>
 <link href="manifest.webmanifest" rel="manifest"/>
 <link href="assets/icons/icon.svg" rel="icon" type="image/svg+xml"/>
 <link href="assets/css/app.css" rel="stylesheet"/>
@@ -44,7 +44,7 @@
 </div>
 <nav aria-label="Main navigation" class="main-nav">
 <button class="nav-link active" data-view="today"><span>⌂</span><b>Today</b><em id="todayBadge"></em></button>
-<button class="nav-link" data-view="mywork"><span>✓</span><b>Action Board</b><em id="myWorkBadge"></em></button><button class="nav-link" data-view="control"><span>⌘</span><b>Control Center</b><em id="controlBadge"></em></button><button class="nav-link" data-view="briefing"><span>▤</span><b>Briefing Center</b></button>
+<button class="nav-link" data-view="mywork"><span>✓</span><b>Action Board</b><em id="myWorkBadge"></em></button><button class="nav-link" data-view="control"><span>⌘</span><b>Control Center</b><em id="controlBadge"></em></button><button class="nav-link" data-view="orchestration"><span>◇</span><b>Orchestration</b><em id="orchestrationBadge"></em></button><button class="nav-link" data-view="briefing"><span>▤</span><b>Briefing Center</b></button>
 <button class="nav-link" data-view="fairs"><span>🎡</span><b>Fairs</b></button>
 <button class="nav-link" data-view="talent"><span>◉</span><b>Talent</b></button>
 <button class="nav-link" data-view="contacts"><span>◎</span><b>Contacts</b></button>
@@ -99,6 +99,9 @@
 <div id="myWorkContent"></div>
 </section><section class="view" data-eyebrow="Production operating system" data-title="Control Center" id="view-control">
 <div id="controlContent"></div>
+</section>
+<section class="view" data-eyebrow="Production workflow engine" data-title="Orchestration" id="view-orchestration">
+<div id="orchestrationContent"></div>
 </section><section class="view" data-eyebrow="Production documents and reports" data-title="Briefing Center" id="view-briefing">
 <div id="briefingContent"></div>
 </section>
@@ -173,7 +176,7 @@
 <nav aria-label="Mobile navigation" class="mobile-dock">
 <button class="active" data-view="today"><span>⌂</span><b>Today</b></button>
 <button data-view="mywork"><span>✓</span><b>Actions</b></button>
-<button data-view="fairs"><span>🎡</span><b>Fairs</b></button>
+<button data-view="orchestration"><span>◇</span><b>Flow</b></button>
 <button data-view="talent"><span>◉</span><b>Talent</b></button>
 <button id="mobileMore"><span>•••</span><b>More</b></button>
 </nav>
@@ -197,7 +200,7 @@
 <div class="popover-head"><div><span class="eyebrow">Local notifications</span><h3>Needs attention</h3></div><button class="text-button" id="clearNotifications">Clear</button></div>
 <div id="notificationList"></div>
 </div>
-<div class="popover quick-popover" id="quickPopover"><button data-os-quick="briefing"><span>▤</span><div><b>Production brief</b><small>Build a ready-to-share report</small></div></button><button data-create="schedule"><span>≡</span><div><b>Add stage block</b><small>Build the run of show</small></div></button>
+<div class="popover quick-popover" id="quickPopover"><button data-workflow-open="orchestration"><span>◇</span><div><b>Production orchestration</b><small>Phases, gates, playbooks, and handoffs</small></div></button><button data-os-quick="briefing"><span>▤</span><div><b>Production brief</b><small>Build a ready-to-share report</small></div></button><button data-create="schedule"><span>≡</span><div><b>Add stage block</b><small>Build the run of show</small></div></button>
 <button data-create="task"><span>☑</span><div><b>New task</b><small>Assign production work</small></div></button>
 <button data-create="talent"><span>◉</span><div><b>Add talent</b><small>Create performer record</small></div></button>
 <button data-create="contact"><span>◎</span><div><b>Add contact</b><small>Fair, talent, or vendor</small></div></button>
@@ -215,6 +218,6 @@
 <script src="assets/js/store.js"></script>
 <script src="assets/js/intelligence.js"></script>
 <script src="assets/js/ui.js"></script>
-<script src="assets/js/app.js"></script><script src="assets/js/system.js"></script>
+<script src="assets/js/app.js"></script><script src="assets/js/system.js"></script><script src="assets/js/workflow.js"></script>
 </body>
 </html>

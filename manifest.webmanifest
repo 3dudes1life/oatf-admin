@@ -1,7 +1,7 @@
 {
   "name": "OATF OS Production",
-  "short_name": "OATF Production",
-  "description": "Shared OATF Production operating system with rules, reporting, schedule intelligence, checkpoints, and day-of command.",
+  "short_name": "OATF OS",
+  "description": "Local-first fair production orchestration, readiness gates, playbooks, dependencies, and handoffs.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#09070d",

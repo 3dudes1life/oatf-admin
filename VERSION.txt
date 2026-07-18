@@ -1,3 +1,4 @@
 OATF OS — Production
-Version: 0.05
-Release: Control Center, rule engine, checkpoints, saved lenses, and Briefing Center
+Version: 0.06
+Release: Workflow Orchestration Engine
+Portal: Shared Production workspace
