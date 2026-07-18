@@ -1,4 +1,3 @@
 OATF OS — Production
-Version: 0.04
-Portal: Shared Production workspace
-Admin: Separate private portal (not included)
+Version: 0.05
+Release: Control Center, rule engine, checkpoints, saved lenses, and Briefing Center

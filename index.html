@@ -8,8 +8,8 @@
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="OATF OS" name="apple-mobile-web-app-title"/>
-<meta content="OATF OS Production — connected fair production, run-of-show intelligence, and day-of command." name="description"/>
-<title>OATF OS · Production · V0.04</title>
+<meta content="OATF OS Production — local-first production control, compliance rules, operational reports, and fair readiness intelligence." name="description"/>
+<title>OATF OS · Production · V0.05</title>
 <link href="manifest.webmanifest" rel="manifest"/>
 <link href="assets/icons/icon.svg" rel="icon" type="image/svg+xml"/>
 <link href="assets/css/app.css" rel="stylesheet"/>
@@ -26,7 +26,7 @@
 <div class="login-copy">
 <span class="eyebrow">Private production workspace</span>
 <h1>Run every fair from one calm, connected place.</h1>
-<p>Shared production workspace for William and Spencer. No budgets, fair payments, negotiations, private contracts, or executive information.</p>
+<p>Shared production workspace for the production team. No budgets, fair payments, negotiations, private contracts, or executive information.</p>
 </div>
 <div aria-label="Choose workspace identity" class="login-user-grid" role="group"><button class="login-user active production-login" data-login-user="Production"><span>P</span><b>Production</b><small>Shared Production Board</small></button></div><div class="admin-separation-note"><span>Private layer</span><b>OATF Admin is a separate portal</b><small>Admin access and its password will not live inside this Production build.</small></div>
 <button class="button primary full" id="enterBoard">Enter Production Board</button>
@@ -44,7 +44,7 @@
 </div>
 <nav aria-label="Main navigation" class="main-nav">
 <button class="nav-link active" data-view="today"><span>⌂</span><b>Today</b><em id="todayBadge"></em></button>
-<button class="nav-link" data-view="mywork"><span>✓</span><b>Action Board</b><em id="myWorkBadge"></em></button>
+<button class="nav-link" data-view="mywork"><span>✓</span><b>Action Board</b><em id="myWorkBadge"></em></button><button class="nav-link" data-view="control"><span>⌘</span><b>Control Center</b><em id="controlBadge"></em></button><button class="nav-link" data-view="briefing"><span>▤</span><b>Briefing Center</b></button>
 <button class="nav-link" data-view="fairs"><span>🎡</span><b>Fairs</b></button>
 <button class="nav-link" data-view="talent"><span>◉</span><b>Talent</b></button>
 <button class="nav-link" data-view="contacts"><span>◎</span><b>Contacts</b></button>
@@ -70,7 +70,7 @@
 <i>⌄</i>
 </button>
 <div class="user-menu" id="userMenu">
-<div class="menu-identity"><span class="avatar tiny">P</span><span><b>Production</b><small>Shared William + Spencer workspace</small></span></div>
+<div class="menu-identity"><span class="avatar tiny">P</span><span><b>Production</b><small>Shared Production workspace</small></span></div>
 <hr/>
 <button data-action="export"><span>⇩</span><span><b>Export backup</b><small>Download JSON</small></span></button>
 <button data-action="import"><span>⇧</span><span><b>Import backup</b><small>Restore JSON</small></span></button>
@@ -97,6 +97,10 @@
 </section>
 <section class="view" data-eyebrow="Production-wide priorities" data-title="Action Board" id="view-mywork">
 <div id="myWorkContent"></div>
+</section><section class="view" data-eyebrow="Production operating system" data-title="Control Center" id="view-control">
+<div id="controlContent"></div>
+</section><section class="view" data-eyebrow="Production documents and reports" data-title="Briefing Center" id="view-briefing">
+<div id="briefingContent"></div>
 </section>
 <section class="view" data-eyebrow="Connected production records" data-title="Fair Workspaces" id="view-fairs">
 <div class="view-intro">
@@ -184,8 +188,8 @@
 </aside>
 <div aria-hidden="true" class="search-overlay" id="searchOverlay">
 <section class="search-panel">
-<div class="search-input-row"><span>⌕</span><input autocomplete="off" id="globalSearch" placeholder="Search fairs, talent, tasks, contacts, files…"/><kbd>ESC</kbd></div>
-<div class="search-hints"><span>Try “Orange County”</span><span>Try “missing music”</span><span>Try “schedule conflict”</span></div>
+<div class="search-input-row"><span>⌕</span><input autocomplete="off" id="globalSearch" placeholder="Search records or type a command…"/><kbd>ESC</kbd></div>
+<div class="search-hints"><span>Try “missing music”</span><span>Try “show overdue”</span><span>Try “production brief”</span></div>
 <div class="search-results" id="searchResults"></div>
 </section>
 </div>
@@ -193,7 +197,7 @@
 <div class="popover-head"><div><span class="eyebrow">Local notifications</span><h3>Needs attention</h3></div><button class="text-button" id="clearNotifications">Clear</button></div>
 <div id="notificationList"></div>
 </div>
-<div class="popover quick-popover" id="quickPopover"><button data-create="schedule"><span>≡</span><div><b>Add stage block</b><small>Build the run of show</small></div></button>
+<div class="popover quick-popover" id="quickPopover"><button data-os-quick="briefing"><span>▤</span><div><b>Production brief</b><small>Build a ready-to-share report</small></div></button><button data-create="schedule"><span>≡</span><div><b>Add stage block</b><small>Build the run of show</small></div></button>
 <button data-create="task"><span>☑</span><div><b>New task</b><small>Assign production work</small></div></button>
 <button data-create="talent"><span>◉</span><div><b>Add talent</b><small>Create performer record</small></div></button>
 <button data-create="contact"><span>◎</span><div><b>Add contact</b><small>Fair, talent, or vendor</small></div></button>
@@ -211,6 +215,6 @@
 <script src="assets/js/store.js"></script>
 <script src="assets/js/intelligence.js"></script>
 <script src="assets/js/ui.js"></script>
-<script src="assets/js/app.js"></script>
+<script src="assets/js/app.js"></script><script src="assets/js/system.js"></script>
 </body>
 </html>

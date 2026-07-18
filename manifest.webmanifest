@@ -1,7 +1,7 @@
 {
   "name": "OATF OS Production",
   "short_name": "OATF Production",
-  "description": "Shared OATF Production Board with schedule intelligence and day-of command.",
+  "description": "Shared OATF Production operating system with rules, reporting, schedule intelligence, checkpoints, and day-of command.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#09070d",

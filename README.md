@@ -1,36 +1,39 @@
 # OATF OS — Production
 
-Version 0.04
+Version 0.05
 
-Shared production portal for William and Spencer. The workspace identity is **Production**, not an individual account.
+Shared **Production** portal. The portal is not named for an individual user. William and Spencer may still appear as record owners, contacts, or activity authors, but the workspace identity and Action Board are simply **Production**.
 
-## V0.04
+## V0.05 — Production Operating System
 
-- Production-wide Action Board
-- Run-of-show builder
-- public and internal schedule modes
-- stage-block forms and connected records
-- overlap detection
-- transition-buffer warnings
-- schedule-gap detection
-- linked talent readiness warnings
-- arrival-window warnings
-- public schedule generator
-- copy-ready public schedule
-- stronger Day-of Command
-- stage queue
-- delay propagation to downstream stage blocks
-- live readiness checklist
-- production handoff generator
-- fair-specific live issue tracking
-- schedule health included in fair readiness
-- migration from V0.03 browser data
-- local-first storage, backup, and offline shell
+- Production Control Center
+- deterministic production rule engine
+- system-wide compliance score
+- saved operational lenses for exceptions, missing materials, overdue work, waiting items, schedule risks, and open issues
+- one-click task creation from rule violations
+- 14-day workload pressure map
+- session delta since the last checkpoint
+- local restorable checkpoints
+- browser storage and offline-shell health indicators
+- Briefing Center
+- generated Production Brief
+- generated Fair Readiness Report
+- generated Day-of Call Sheet
+- generated Follow-Up Digest
+- generated Issue & Risk Report
+- generated Public Schedule
+- copy, download, print, and Save-as-PDF report actions
+- deterministic command results inside universal search
+- automatic migration from V0.04 local data
 
-## Portal separation
+## Production-only boundary
 
-This ZIP contains only **Production**. It does not contain an Admin password, Admin login, financials, fair payments, revenue, internal negotiations, private contracts, insurance, or executive-only notes. Those will live in a separately deployed **OATF Admin** portal available only to William.
+This ZIP contains no Admin password, Admin login, revenue, fair payments, budgets, profitability, private fair agreements, negotiations, insurance, executive notes, or AI features. Those belong in the separately deployed **OATF Admin** portal.
+
+## Local-first behavior
+
+All operational data, checkpoints, preferences, and reports are generated in the current browser. No database, cloud storage, calendar, email account, or external API is connected.
 
 ## Hosting
 
-Upload all contents while preserving the folder structure. It works as a static local-first site on GitHub Pages or another static host.
+Upload every file while preserving the included folder structure. The app works on GitHub Pages and other static hosts.
