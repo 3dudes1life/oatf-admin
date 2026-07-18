@@ -1,328 +1,239 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>OATF Admin Portal Mockup</title>
-<meta content="Static mockup of the Out at the Fair private production and partnership portal." name="description"/>
-<link href="assets/styles.css" rel="stylesheet"/>
-<meta content="#07050b" name="theme-color"/><meta content="yes" name="apple-mobile-web-app-capable"/></head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#09070d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OATF OS">
+  <meta name="description" content="OATF OS Production Board — the shared local-first workspace for Out at the Fair production.">
+  <title>OATF OS · Production Board</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
 <body>
-<div class="login-shell" id="login">
-<div class="login-glow g1"></div><div class="login-glow g2"></div>
-<div class="login-card">
-<div class="brand-lockup">
-<div class="brand-mark">OATF</div>
-<div><strong>Out at the Fair®</strong><span>Partner Operations Portal</span></div>
-</div>
-<div class="login-copy">
-<span class="kicker">Private workspace</span>
-<h1>Everything needed to produce the next fair.</h1>
-<p>Tasks, notes, talent, deadlines, files, approvals, and day-of production—organized in one shared command center.</p>
-</div>
-<button class="primary full" onclick="enterPortal()">Enter Mock Portal</button>
-<p class="demo-note">Static presentation mockup. No accounts or data are connected.</p>
-</div>
-</div>
-<div class="app hidden" id="app">
-<aside class="sidebar">
-<div class="sidebar-brand">
-<div class="brand-mark small">OATF</div>
-<div><strong>Out at the Fair®</strong><span>Operations Portal</span></div>
-<span class="version-badge">v0.01</span></div>
-<nav>
-<button class="nav-item active" data-view="overview"><span>⌂</span>Overview</button>
-<button class="nav-item" data-view="fairs"><span>🎡</span>Fair Workspaces</button>
-<button class="nav-item" data-view="tasks"><span>✓</span>Task Board</button>
-<button class="nav-item" data-view="talent"><span>🎤</span>Talent Pipeline</button>
-<button class="nav-item" data-view="calendar"><span>◫</span>Calendar</button>
-<button class="nav-item" data-view="files"><span>▣</span>Files</button>
-<button class="nav-item" data-view="activity"><span>↻</span>Activity</button>
-<button class="nav-item" data-view="dayof"><span>⚡</span>Day-of Mode</button>
-</nav>
-<div class="sidebar-foot">
-<div class="team-stack"><span>W</span><span>S</span><span>H</span></div>
-<div><strong>3 active collaborators</strong><small>William · Spencer · Hyperion</small></div>
-</div>
-</aside>
-<main class="main">
-<header class="topbar">
-<button class="mobile-menu" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
-<div>
-<span class="kicker">2027 Production Season</span>
-<h2 id="pageTitle">Command Center</h2>
-</div>
-<div class="top-actions"><button class="primary" data-action="smart-brief">✦ Smart Brief</button>
-<button class="ghost" data-action="new-task">＋ New Task</button>
-<div class="profile"><div class="avatar">W</div><div><strong>William</strong><span>Administrator</span></div></div>
-</div>
-</header>
-<section class="view active-view" id="overview">
-<div class="hero-panel">
-<div>
-<span class="kicker">Season status</span>
-<h1>2027 is taking shape.</h1>
-<p>Three fairs are active. The dashboard surfaces what is ready, what is late, and who is holding the next move.</p>
-</div>
-<div class="season-score">
-<div class="ring"><span>64%</span></div>
-<small>Season readiness</small>
-</div>
-</div>
-<div class="metric-grid">
-<article class="metric"><span>Active fairs</span><strong>3</strong><small>Riverside · San Diego · Orange County</small></article>
-<article class="metric"><span>Open tasks</span><strong>28</strong><small><b>7</b> due this week</small></article>
-<article class="metric"><span>Talent confirmed</span><strong>11</strong><small>6 awaiting contracts</small></article>
-<article class="metric"><span>Pending approvals</span><strong>5</strong><small>2 waiting on fair partners</small></article>
-</div>
-<div class="dashboard-grid">
-<section class="panel wide">
-<div class="panel-head"><div><span class="kicker">Fair readiness</span><h3>2027 Workspaces</h3></div><button class="text-btn" data-view="fairs">View all →</button></div>
-<div class="fair-list">
-<article class="fair-row">
-<div class="fair-icon river">R</div>
-<div class="fair-meta"><strong>Riverside County Fair</strong><span>February 2027 · Indio</span></div>
-<div class="progress"><i style="width:82%"></i></div><b>82%</b><span class="pill green">On track</span>
-</article>
-<article class="fair-row">
-<div class="fair-icon sd">SD</div>
-<div class="fair-meta"><strong>San Diego County Fair</strong><span>June 2027 · Del Mar</span></div>
-<div class="progress"><i style="width:61%"></i></div><b>61%</b><span class="pill yellow">Needs review</span>
-</article>
-<article class="fair-row">
-<div class="fair-icon oc">OC</div>
-<div class="fair-meta"><strong>Orange County Fair</strong><span>July 2027 · Costa Mesa</span></div>
-<div class="progress"><i style="width:49%"></i></div><b>49%</b><span class="pill pink">Waiting on fair</span>
-</article>
-</div>
-</section>
-<section class="panel">
-<div class="panel-head"><div><span class="kicker">Urgent</span><h3>Due soon</h3></div></div>
-<div class="task-mini">
-<label><input type="checkbox"/> Finalize OC stage schedule <em>Tomorrow</em></label>
-<label><input type="checkbox"/> Send San Diego offer letters <em>Jul 22</em></label>
-<label><input type="checkbox"/> Approve Riverside sponsor deck <em>Jul 24</em></label>
-<label><input type="checkbox"/> Confirm Glam Show host <em>Jul 25</em></label>
-</div>
-</section>
-<section class="panel">
-<div class="panel-head"><div><span class="kicker">Ownership</span><h3>Waiting on</h3></div></div>
-<div class="wait-list">
-<div><span class="avatar sm">W</span><b>William</b><strong>6</strong></div>
-<div><span class="avatar sm purple">S</span><b>Spencer</b><strong>8</strong></div>
-<div><span class="avatar sm gold">F</span><b>Fair partners</b><strong>5</strong></div>
-<div><span class="avatar sm teal">T</span><b>Talent</b><strong>9</strong></div>
-</div>
-</section>
-<section class="panel wide">
-<div class="panel-head"><div><span class="kicker">Recent activity</span><h3>What changed</h3></div><button class="text-btn" data-view="activity">Full log →</button></div>
-<div class="timeline">
-<div><span class="dot pink"></span><p><b>Spencer</b> moved <strong>Golden State Squares</strong> to Contracted.</p><time>18 min ago</time></div>
-<div><span class="dot cyan"></span><p><b>William</b> approved the Orange County stage graphic.</p><time>1 hr ago</time></div>
-<div><span class="dot yellow"></span><p><b>OC Fair</b> added a note to “Plaza Stage load-in.”</p><time>Yesterday</time></div>
-<div><span class="dot green"></span><p><b>Hyperion</b> uploaded the revised San Diego run of show.</p><time>Yesterday</time></div>
-</div>
-</section>
-</div>
-</section><section class="view" id="smart">
-<div class="smart-hero">
-<div>
-<span class="kicker">OATF Intelligence</span>
-<h2>Your executive brief for today.</h2>
-<p>The dashboard is analyzing readiness, deadlines, blockers, talent gaps, and outstanding fair-partner actions using the data already inside this workspace.</p>
-</div>
-<div class="smart-score-card">
-<span>Season readiness</span>
-<strong id="seasonReadiness">—</strong>
-<small id="seasonReadinessLabel">Calculating…</small>
-</div>
-</div>
-<div class="smart-grid">
-<article class="panel smart-focus">
-<div class="panel-head">
-<div><span class="kicker">Priority queue</span><h3>What needs attention</h3></div>
-<button class="ghost compact" id="refreshIntelligence">Recalculate</button>
-</div>
-<div class="smart-list" id="smartPriorityList"></div>
-</article>
-<article class="panel smart-actions-panel">
-<div class="panel-head">
-<div><span class="kicker">Recommended actions</span><h3>Best next moves</h3></div>
-</div>
-<div class="smart-list" id="smartActions"></div>
-</article>
-</div>
-<div class="smart-grid three">
-<article class="panel">
-<span class="kicker">Readiness by fair</span>
-<h3>Fair health</h3>
-<div class="fair-health-list" id="fairHealth"></div>
-</article>
-<article class="panel">
-<span class="kicker">Talent intelligence</span>
-<h3>Pipeline risks</h3>
-<div class="smart-mini-list" id="talentRisks"></div>
-</article>
-<article class="panel">
-<span class="kicker">Deadline intelligence</span>
-<h3>Upcoming pressure</h3>
-<div class="smart-mini-list" id="deadlinePressure"></div>
-</article>
-</div>
-<div class="smart-grid">
-<article class="panel">
-<div class="panel-head">
-<div><span class="kicker">Dependencies</span><h3>Blocked work map</h3></div>
-</div>
-<div class="dependency-map" id="dependencyMap"></div>
-</article>
-<article class="panel">
-<div class="panel-head">
-<div><span class="kicker">Weekly pulse</span><h3>Momentum</h3></div>
-</div>
-<div class="momentum-panel" id="momentumPanel"></div>
-</article>
-</div>
-</section>
-<section class="view" id="fairs">
-<div class="section-intro"><div><span class="kicker">Shared production spaces</span><h1>Fair Workspaces</h1><p>Each event contains its own contacts, contracts, talent, tasks, schedule, files, notes, and public-page controls.</p></div><button class="primary" data-action="create-fair">＋ Create Fair</button></div>
-<div class="workspace-cards">
-<article class="workspace-card river-card" onclick="openFair('Riverside County Fair')">
-<div class="workspace-top"><span class="pill green">On track</span><b>82%</b></div><div><span class="kicker">February 2027</span><h3>Riverside County Fair</h3><p>National Date Festival · Indio, CA</p></div>
-<div class="workspace-stats"><span><b>24</b> tasks</span><span><b>5</b> talent</span><span><b>12</b> files</span></div>
-</article>
-<article class="workspace-card sd-card" onclick="openFair('San Diego County Fair')">
-<div class="workspace-top"><span class="pill yellow">Needs review</span><b>61%</b></div><div><span class="kicker">June 2027</span><h3>San Diego County Fair</h3><p>Del Mar Fairgrounds · Del Mar, CA</p></div>
-<div class="workspace-stats"><span><b>31</b> tasks</span><span><b>8</b> talent</span><span><b>19</b> files</span></div>
-</article>
-<article class="workspace-card oc-card" onclick="openFair('Orange County Fair')">
-<div class="workspace-top"><span class="pill pink">Waiting on fair</span><b>49%</b></div><div><span class="kicker">July 2027</span><h3>Orange County Fair</h3><p>OC Fair &amp; Event Center · Costa Mesa, CA</p></div>
-<div class="workspace-stats"><span><b>27</b> tasks</span><span><b>6</b> talent</span><span><b>14</b> files</span></div>
-</article>
-</div>
-</section>
-<section class="view" id="fairdetail">
-<button class="back-btn" data-view="fairs">← Back to all fairs</button>
-<div class="section-intro">
-<div><span class="kicker">Fair workspace</span><h1 id="fairTitle">Orange County Fair</h1><p>Shared production workspace for Out at the Fair® and Hyperion LA.</p></div>
-<div class="actions-row"><button class="ghost" data-action="preview-page">Preview Public Page</button><button class="primary" data-action="publish-update">Publish Update</button></div>
-</div>
-<div class="workspace-tabs">
-<button class="active">Overview</button><button>Tasks</button><button>Talent</button><button>Schedule</button><button>Partners</button><button>Files</button><button>Notes</button>
-</div>
-<div class="dashboard-grid">
-<section class="panel wide">
-<div class="panel-head"><div><span class="kicker">Readiness</span><h3>Production checklist</h3></div><span class="pill yellow">61% complete</span></div>
-<div class="checklist">
-<div><span>Fair agreement signed</span><b>Complete</b><i class="done"></i></div>
-<div><span>Stage and venue confirmed</span><b>Complete</b><i class="done"></i></div>
-<div><span>Entertainment budget approved</span><b>In review</b><i class="review"></i></div>
-<div><span>Talent fully contracted</span><b>6 of 9</b><i style="--w:66%"></i></div>
-<div><span>Music and tech files received</span><b>4 of 9</b><i style="--w:44%"></i></div>
-<div><span>Marketing assets approved</span><b>2 of 5</b><i style="--w:40%"></i></div>
-</div>
-</section>
-<section class="panel">
-<div class="panel-head"><div><span class="kicker">Fair contacts</span><h3>People</h3></div><button class="text-btn">Edit</button></div>
-<div class="contact-list">
-<div><span class="avatar sm gold">A</span><p><b>Andrew</b><small>Fair Entertainment</small></p></div>
-<div><span class="avatar sm purple">S</span><p><b>Spencer</b><small>Hyperion LA</small></p></div>
-<div><span class="avatar sm">W</span><p><b>William</b><small>Out at the Fair</small></p></div>
-</div>
-</section>
-<section class="panel">
-<div class="panel-head"><div><span class="kicker">Shared notes</span><h3>Latest note</h3></div></div>
-<div class="note-box">
-<p>“Let’s make sure the Plaza Stage has stronger OATF visual branding this year—flags, pennants, and the full backdrop.”</p>
-<span>William · Today at 9:42 AM</span>
-</div>
-<textarea placeholder="Leave a note for the team..."></textarea>
-<button class="primary small-btn" data-action="post-note">Post Note</button>
-</section>
-</div>
-</section>
-<section class="view" id="tasks">
-<div class="section-intro"><div><span class="kicker">Shared accountability</span><h1>Task Board</h1><p>Every action has an owner, deadline, fair, priority, notes, and activity history.</p></div><button class="primary" data-action="new-task">＋ New Task</button></div>
-<div class="filters"><button class="active" data-task-fair="all">All fairs</button><button data-task-fair="Riverside">Riverside</button><button data-task-fair="San Diego">San Diego</button><button data-task-fair="Orange County">Orange County</button><select id="taskOwnerFilter"><option>All owners</option><option>William</option><option>Spencer</option><option>Fair Partner</option></select></div>
-<div class="kanban" id="taskBoard">
-<div class="column"><div class="column-head"><b>To do</b><span>6</span></div>
-<article class="task-card"><span class="tag oc">Orange County</span><h4>Finalize Plaza Stage schedule</h4><p>Confirm timing with fair entertainment team.</p><div><span class="avatar xs purple">S</span><time>Tomorrow</time></div></article>
-<article class="task-card"><span class="tag sd">San Diego</span><h4>Send performer offer letters</h4><p>Use updated family-friendly contract language.</p><div><span class="avatar xs">W</span><time>Jul 22</time></div></article>
-</div>
-<div class="column"><div class="column-head"><b>In progress</b><span>4</span></div>
-<article class="task-card"><span class="tag river">Riverside</span><h4>Update presenting sponsor deck</h4><p>Add Fantasy Springs activation ideas.</p><div><span class="avatar xs">W</span><time>Jul 24</time></div></article>
-<article class="task-card"><span class="tag oc">Orange County</span><h4>Confirm Glam Show lineup</h4><p>Three performers pending final confirmation.</p><div><span class="avatar xs purple">S</span><time>Jul 25</time></div></article>
-</div>
-<div class="column"><div class="column-head"><b>Waiting</b><span>5</span></div>
-<article class="task-card"><span class="tag sd">San Diego</span><h4>Approve stage footprint</h4><p>Waiting on fair production department.</p><div><span class="avatar xs gold">F</span><time>Waiting 3 days</time></div></article>
-<article class="task-card"><span class="tag oc">Orange County</span><h4>Confirm load-in parking</h4><p>Need vehicle access and credentials.</p><div><span class="avatar xs gold">F</span><time>Waiting 5 days</time></div></article>
-</div>
-<div class="column"><div class="column-head"><b>Complete</b><span>18</span></div>
-<article class="task-card complete"><span class="tag river">Riverside</span><h4>Fair agreement signed</h4><p>Final executed agreement uploaded.</p><div><span class="avatar xs">W</span><time>Jul 14</time></div></article>
-<article class="task-card complete"><span class="tag sd">San Diego</span><h4>Reserve OATF stage branding</h4><p>Backdrop and pennants allocated.</p><div><span class="avatar xs purple">S</span><time>Jul 11</time></div></article>
-</div>
-</div>
-</section>
-<section class="view" id="talent">
-<div class="section-intro"><div><span class="kicker">Booking workflow</span><h1>Talent Pipeline</h1><p>Track each performer from submission through contracts, music delivery, tech approval, and show completion.</p></div><button class="primary" data-action="add-talent">＋ Add Talent</button></div>
-<div class="pipeline-strip" id="pipelineStrip"><span>Submitted <b>12</b></span><span>Reviewing <b>7</b></span><span>Offered <b>6</b></span><span>Contracted <b>11</b></span><span>Ready <b>5</b></span></div>
-<div class="talent-table" id="talentTable">
-<div class="table-head"><span>Talent</span><span>Fair</span><span>Status</span><span>Fee</span><span>Music</span><span>Owner</span></div>
-<div><span><b>Golden State Squares</b><small>Dance performance</small></span><span>OC Fair</span><span class="pill green">Contracted</span><span>$—</span><span>Received</span><span class="avatar xs purple">S</span></div>
-<div><span><b>Summer Daze</b><small>Story Time + Glam Show</small></span><span>OC Fair</span><span class="pill yellow">Offered</span><span>$200</span><span>Pending</span><span class="avatar xs">W</span></div>
-<div><span><b>Ross Alan</b><small>Live music</small></span><span>San Diego</span><span class="pill green">Contracted</span><span>$—</span><span>Received</span><span class="avatar xs purple">S</span></div>
-<div><span><b>Nicole &amp; Scotty</b><small>Live music</small></span><span>San Diego</span><span class="pill cyan">Reviewing</span><span>$—</span><span>Not requested</span><span class="avatar xs">W</span></div>
-<div><span><b>Hashtag Truly</b><small>Live performance</small></span><span>Riverside</span><span class="pill pink">Submitted</span><span>$—</span><span>Not requested</span><span class="avatar xs purple">S</span></div>
-</div>
-</section>
-<section class="view" id="calendar">
-<div class="section-intro"><div><span class="kicker">Deadlines and show days</span><h1>Production Calendar</h1><p>One calendar for contracts, marketing, talent, rehearsals, fair deadlines, and event days.</p></div><button class="primary" data-action="add-deadline">＋ Add Deadline</button></div>
-<div class="calendar-panel">
-<div class="calendar-head"><button id="calendarPrev">←</button><h3 id="calendarTitle">July 2026</h3><button id="calendarNext">→</button></div>
-<div class="weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
-<div class="days" id="days"></div>
-</div>
-</section>
-<section class="view" id="files">
-<div class="section-intro"><div><span class="kicker">Central library</span><h1>Files &amp; Assets</h1><p>Contracts, W-9s, music, logos, run-of-show documents, sponsor decks, maps, and final graphics.</p></div><button class="primary" data-action="add-file">Upload Files</button></div>
-<div class="file-folders">
-<article><span>📁</span><h3>2027 Fair Agreements</h3><p>3 files · Updated today</p></article>
-<article><span>📁</span><h3>Talent Contracts</h3><p>18 files · Updated yesterday</p></article>
-<article><span>📁</span><h3>Stage &amp; Production</h3><p>12 files · Updated Jul 16</p></article>
-<article><span>📁</span><h3>Brand &amp; Marketing</h3><p>27 files · Updated Jul 15</p></article>
-</div>
-<div class="recent-files panel" id="recentFiles"><div class="panel-head"><div><span class="kicker">Recently updated</span><h3>Files</h3></div></div>
-<div class="file-row"><span>PDF</span><p><b>OC_Fair_2027_Run_of_Show_v3.pdf</b><small>Orange County · Uploaded by Spencer</small></p><time>18 min ago</time></div>
-<div class="file-row"><span>DOC</span><p><b>Family_Friendly_Talent_Agreement.docx</b><small>Shared Templates · Updated by William</small></p><time>Yesterday</time></div>
-<div class="file-row"><span>PNG</span><p><b>OATF_2027_Stage_Backdrop.png</b><small>Brand &amp; Marketing · Approved</small></p><time>Jul 16</time></div>
-</div>
-</section>
-<section class="view" id="activity">
-<div class="section-intro"><div><span class="kicker">Full accountability</span><h1>Activity Log</h1><p>A searchable record of task changes, approvals, notes, file uploads, and publishing actions.</p></div></div>
-<div class="activity-feed panel" id="activityFeed">
-<div><span class="avatar sm purple">S</span><p><b>Spencer</b> moved Golden State Squares from “Offered” to “Contracted.”<small>Orange County Fair · Talent</small></p><time>18 min ago</time></div>
-<div><span class="avatar sm">W</span><p><b>William</b> approved OATF_2027_Stage_Backdrop.png.<small>Brand &amp; Marketing</small></p><time>1 hr ago</time></div>
-<div><span class="avatar sm gold">F</span><p><b>OC Fair Partner</b> commented on Plaza Stage load-in.<small>Orange County Fair · Task #128</small></p><time>Yesterday</time></div>
-<div><span class="avatar sm purple">S</span><p><b>Spencer</b> uploaded OC_Fair_2027_Run_of_Show_v3.pdf.<small>Orange County Fair · Files</small></p><time>Yesterday</time></div>
-</div>
-</section>
-<section class="view" id="dayof">
-<div class="section-intro"><div><span class="kicker">Mobile production mode</span><h1>Day-of Command</h1><p>A simplified live view for show day: schedule, contacts, urgent tasks, notes, and incident logging.</p></div><select><option>Orange County Fair · Jul 2027</option><option>San Diego County Fair · Jun 2027</option></select></div>
-<div class="dayof-grid">
-<section class="panel"><div class="panel-head"><div><span class="kicker">Live schedule</span><h3>Plaza Stage</h3></div><span class="live-dot">Live</span></div>
-<div class="show-list" id="dayOfSchedule"><div class="now"><time>12:15</time><p><b>Golden State Squares</b><small>On stage now · 18 min remaining</small></p></div><div><time>1:00</time><p><b>OATF Story Time</b><small>Summer Daze · Ready backstage</small></p></div><div><time>1:30</time><p><b>Nicole &amp; Scotty</b><small>Sound check complete</small></p></div><div><time>3:00</time><p><b>OATF Story Time</b><small>Second performance</small></p></div><div><time>5:00</time><p><b>OATF Glam Show</b><small>5 performers confirmed</small></p></div></div>
-</section>
-<section class="panel"><div class="panel-head"><div><span class="kicker">Urgent</span><h3>Live issues</h3></div><button class="primary small-btn" data-action="log-issue">＋ Log issue</button></div>
-<div class="issue"><span class="pill yellow">Open</span><p><b>Performer parking credential missing</b><small>Assigned to Spencer · 8 min ago</small></p></div>
-<div class="issue"><span class="pill green">Resolved</span><p><b>Stage-left monitor adjustment</b><small>Resolved by production · 22 min ago</small></p></div>
-</section>
-<section class="panel"><div class="panel-head"><div><span class="kicker">Quick contacts</span><h3>Call sheet</h3></div></div>
-<div class="contact-list"><div><span class="avatar sm">W</span><p><b>William</b><small>Brand / Fair Liaison</small></p><button>Call</button></div><div><span class="avatar sm purple">S</span><p><b>Spencer</b><small>Producer</small></p><button>Call</button></div><div><span class="avatar sm gold">A</span><p><b>Andrew</b><small>Fair Entertainment</small></p><button>Call</button></div></div>
-</section>
-</div>
-</section>
-</main>
-</div>
-<script src="assets/app.js"></script>
-</body></html>
+  <div class="login-shell" id="loginScreen">
+    <div class="orb orb-one"></div>
+    <div class="orb orb-two"></div>
+    <section class="login-card">
+      <div class="brand-row">
+        <div class="brand-mark">OATF</div>
+        <div><strong>OATF OS</strong><span>Production Board</span></div>
+      </div>
+      <div class="login-copy">
+        <span class="eyebrow">Private production workspace</span>
+        <h1>Run every fair from one calm, connected place.</h1>
+        <p>Shared by William and Spencer. Production work only—no budgets, fair payments, negotiations, or executive information.</p>
+      </div>
+      <div class="login-user-grid" role="group" aria-label="Choose workspace identity">
+        <button class="login-user active" data-login-user="Spencer"><span>S</span><b>Spencer</b><small>Production</small></button>
+        <button class="login-user" data-login-user="William"><span>W</span><b>William</b><small>Board</small></button>
+      </div>
+      <button class="button primary full" id="enterBoard">Enter Production Board</button>
+      <small class="privacy-note">Local-first preview. Data remains in this browser until a backend is intentionally connected.</small>
+    </section>
+  </div>
+
+  <div class="app-shell hidden" id="appShell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <button class="brand-button" data-view="today" aria-label="Go to Today">
+          <span class="brand-mark small">OATF</span>
+          <span><strong>OATF OS</strong><small>Production Board</small></span>
+        </button>
+        <button class="icon-button collapse-sidebar" id="collapseSidebar" aria-label="Collapse sidebar">‹</button>
+      </div>
+
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-link active" data-view="today"><span>⌂</span><b>Today</b><em id="todayBadge"></em></button>
+        <button class="nav-link" data-view="mywork"><span>✓</span><b>My Work</b><em id="myWorkBadge"></em></button>
+        <button class="nav-link" data-view="fairs"><span>🎡</span><b>Fairs</b></button>
+        <button class="nav-link" data-view="talent"><span>◉</span><b>Talent</b></button>
+        <button class="nav-link" data-view="contacts"><span>◎</span><b>Contacts</b></button>
+        <button class="nav-link" data-view="followups"><span>↗</span><b>Follow-Up</b><em id="followUpBadge"></em></button>
+        <button class="nav-link" data-view="tasks"><span>☑</span><b>Tasks</b></button>
+        <button class="nav-link" data-view="calendar"><span>▦</span><b>Calendar</b></button>
+        <button class="nav-link" data-view="files"><span>▣</span><b>Files</b></button>
+        <button class="nav-link" data-view="activity"><span>↻</span><b>Activity</b></button>
+        <button class="nav-link dayof-link" data-view="dayof"><span>⚡</span><b>Day-of</b></button>
+      </nav>
+
+      <section class="sidebar-section favorites-section">
+        <div class="sidebar-label"><span>Favorites</span><button id="manageFavorites" aria-label="Manage favorites">＋</button></div>
+        <div class="favorite-list" id="sidebarFavorites"></div>
+      </section>
+
+      <section class="sidebar-section recent-section">
+        <div class="sidebar-label"><span>Recently viewed</span></div>
+        <div class="recent-list" id="sidebarRecent"></div>
+      </section>
+
+      <div class="sidebar-foot">
+        <button class="user-switcher" id="userSwitcher">
+          <span class="avatar" id="sidebarAvatar">S</span>
+          <span><strong id="sidebarUserName">Spencer</strong><small>Production workspace</small></span>
+          <i>⌄</i>
+        </button>
+        <div class="user-menu" id="userMenu">
+          <button data-switch-user="Spencer"><span class="avatar tiny">S</span><span><b>Spencer</b><small>Production</small></span></button>
+          <button data-switch-user="William"><span class="avatar tiny william">W</span><span><b>William</b><small>Board</small></span></button>
+          <hr>
+          <button data-action="export"><span>⇩</span><span><b>Export backup</b><small>Download JSON</small></span></button>
+          <button data-action="import"><span>⇧</span><span><b>Import backup</b><small>Restore JSON</small></span></button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="app-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-button mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button>
+          <div class="page-heading"><span id="pageEyebrow">Production Board</span><h2 id="pageTitle">Today</h2></div>
+        </div>
+        <div class="topbar-actions">
+          <button class="search-trigger" id="searchTrigger"><span>⌕</span><b>Search everything</b><kbd>⌘ K</kbd></button>
+          <span class="save-state" id="saveState"><i></i><b>Saved</b></span>
+          <button class="icon-button notification-button" id="notificationButton" aria-label="Notifications"><span>◔</span><em id="notificationCount"></em></button>
+          <button class="button primary quick-add" id="quickAdd"><span>＋</span><b>New</b></button>
+          <button class="top-profile" id="topProfile"><span class="avatar" id="topAvatar">S</span></button>
+        </div>
+      </header>
+
+      <div class="view-stack">
+        <section class="view active" id="view-today" data-title="Today" data-eyebrow="Production Board">
+          <div id="todayContent"></div>
+        </section>
+
+        <section class="view" id="view-mywork" data-title="My Work" data-eyebrow="Personal production queue">
+          <div id="myWorkContent"></div>
+        </section>
+
+        <section class="view" id="view-fairs" data-title="Fair Workspaces" data-eyebrow="Connected production records">
+          <div class="view-intro">
+            <div><span class="eyebrow">Shared production spaces</span><h1>Fair Workspaces</h1><p>Every task, performer, contact, deadline, file, and note stays connected to its fair.</p></div>
+            <button class="button primary" data-create="fair">＋ Add Fair</button>
+          </div>
+          <div class="fair-card-grid" id="fairGrid"></div>
+        </section>
+
+        <section class="view" id="view-talent" data-title="Talent" data-eyebrow="Performer readiness">
+          <div class="view-intro">
+            <div><span class="eyebrow">Connected talent records</span><h1>Talent</h1><p>Track readiness, music, bios, photos, parking, arrival details, and linked production work.</p></div>
+            <button class="button primary" data-create="talent">＋ Add Talent</button>
+          </div>
+          <div class="toolbar" id="talentToolbar"></div>
+          <div class="record-grid" id="talentGrid"></div>
+        </section>
+
+        <section class="view" id="view-contacts" data-title="Contacts" data-eyebrow="Production relationships">
+          <div class="view-intro">
+            <div><span class="eyebrow">Production contact book</span><h1>Contacts</h1><p>Fair partners, talent managers, performers, vendors, and production contacts—with follow-up memory built in.</p></div>
+            <button class="button primary" data-create="contact">＋ Add Contact</button>
+          </div>
+          <div class="toolbar" id="contactToolbar"></div>
+          <div class="contact-grid" id="contactGrid"></div>
+        </section>
+
+        <section class="view" id="view-followups" data-title="Follow-Up" data-eyebrow="Waiting and outreach">
+          <div id="followUpContent"></div>
+        </section>
+
+        <section class="view" id="view-tasks" data-title="Task Board" data-eyebrow="Production workflow">
+          <div class="view-intro compact-intro">
+            <div><span class="eyebrow">Connected work</span><h1>Task Board</h1><p>Drag work forward, expose blockers, and keep ownership clear.</p></div>
+            <button class="button primary" data-create="task">＋ New Task</button>
+          </div>
+          <div class="toolbar" id="taskToolbar"></div>
+          <div class="kanban" id="taskBoard"></div>
+        </section>
+
+        <section class="view" id="view-calendar" data-title="Calendar" data-eyebrow="Deadlines and production dates">
+          <div class="view-intro compact-intro">
+            <div><span class="eyebrow">Production calendar</span><h1>Deadlines</h1><p>See pressure before it becomes a day-of problem.</p></div>
+            <button class="button primary" data-create="deadline">＋ Add Deadline</button>
+          </div>
+          <div class="calendar-shell">
+            <div class="calendar-head"><button class="icon-button" id="calendarPrev">‹</button><h3 id="calendarTitle"></h3><button class="icon-button" id="calendarNext">›</button></div>
+            <div class="calendar-grid weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+            <div class="calendar-grid days" id="calendarDays"></div>
+          </div>
+        </section>
+
+        <section class="view" id="view-files" data-title="Files" data-eyebrow="Production assets">
+          <div class="view-intro compact-intro">
+            <div><span class="eyebrow">Connected file index</span><h1>Files</h1><p>Track where the latest production assets belong. Actual uploads connect later.</p></div>
+            <button class="button primary" data-create="file">＋ Add File Record</button>
+          </div>
+          <div class="toolbar" id="fileToolbar"></div>
+          <div class="file-list" id="fileList"></div>
+        </section>
+
+        <section class="view" id="view-activity" data-title="Activity" data-eyebrow="Complete production history">
+          <div class="view-intro compact-intro"><div><span class="eyebrow">Timeline</span><h1>Activity</h1><p>Every meaningful local change is recorded and connected to its source.</p></div></div>
+          <div class="activity-feed full-feed" id="activityFeed"></div>
+        </section>
+
+        <section class="view" id="view-dayof" data-title="Day-of Mode" data-eyebrow="Live production">
+          <div id="dayOfContent"></div>
+        </section>
+      </div>
+    </main>
+
+    <nav class="mobile-dock" aria-label="Mobile navigation">
+      <button class="active" data-view="today"><span>⌂</span><b>Today</b></button>
+      <button data-view="mywork"><span>✓</span><b>My Work</b></button>
+      <button data-view="fairs"><span>🎡</span><b>Fairs</b></button>
+      <button data-view="talent"><span>◉</span><b>Talent</b></button>
+      <button id="mobileMore"><span>•••</span><b>More</b></button>
+    </nav>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+
+  <aside class="detail-drawer" id="detailDrawer" aria-hidden="true">
+    <header class="drawer-head">
+      <button class="icon-button" id="closeDrawer" aria-label="Close details">×</button>
+      <div class="drawer-actions"><button class="icon-button favorite-button" id="drawerFavorite" aria-label="Favorite">☆</button><button class="button ghost small-button" id="drawerEdit">Edit</button></div>
+    </header>
+    <div id="drawerContent"></div>
+  </aside>
+
+  <div class="search-overlay" id="searchOverlay" aria-hidden="true">
+    <section class="search-panel">
+      <div class="search-input-row"><span>⌕</span><input id="globalSearch" autocomplete="off" placeholder="Search fairs, talent, tasks, contacts, files…"><kbd>ESC</kbd></div>
+      <div class="search-hints"><span>Try “Orange County”</span><span>Try “missing music”</span><span>Try “Spencer tasks”</span></div>
+      <div class="search-results" id="searchResults"></div>
+    </section>
+  </div>
+
+  <div class="popover notification-popover" id="notificationPopover">
+    <div class="popover-head"><div><span class="eyebrow">Local notifications</span><h3>Needs attention</h3></div><button class="text-button" id="clearNotifications">Clear</button></div>
+    <div id="notificationList"></div>
+  </div>
+
+  <div class="popover quick-popover" id="quickPopover">
+    <button data-create="task"><span>☑</span><div><b>New task</b><small>Assign production work</small></div></button>
+    <button data-create="talent"><span>◉</span><div><b>Add talent</b><small>Create performer record</small></div></button>
+    <button data-create="contact"><span>◎</span><div><b>Add contact</b><small>Fair, talent, or vendor</small></div></button>
+    <button data-create="deadline"><span>▦</span><div><b>Add deadline</b><small>Create calendar pressure point</small></div></button>
+    <button data-create="note"><span>✎</span><div><b>Add note</b><small>Connect shared context</small></div></button>
+  </div>
+
+  <div class="modal-shell" id="modalShell" aria-hidden="true">
+    <section class="modal-card">
+      <header><div><span class="eyebrow" id="modalEyebrow">Create</span><h2 id="modalTitle">New record</h2></div><button class="icon-button" id="modalClose">×</button></header>
+      <form id="recordForm"><div class="form-body" id="formBody"></div><footer><button type="button" class="button ghost" id="modalCancel">Cancel</button><button class="button primary" type="submit">Save</button></footer></form>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"><div><b id="toastTitle"></b><span id="toastMessage"></span></div><button id="toastUndo">Undo</button></div>
+  <input type="file" id="importInput" accept="application/json" hidden>
+
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/intelligence.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

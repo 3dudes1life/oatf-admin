@@ -1,47 +1,55 @@
-# OATF Admin Portal — V0.01
+# OATF OS — Production Board
 
-A static, browser-persistent operations workspace for Out at the Fair®.
+Version 0.03
 
-## Built in V0.01
+Shared production workspace for William and Spencer.
 
-- Demo login with session memory
-- LocalStorage-backed dashboard data
-- Create fair workspaces
-- Create, filter, drag, complete, and delete tasks
-- Add talent and move performers through pipeline stages
-- Add calendar deadlines and navigate months
-- Add local file records
-- Post shared fair notes
-- Log and update day-of issues
-- Dynamic overview metrics
-- Dynamic fair workspace counts
-- Search fairs, tasks, talent, and files with Command/Ctrl + K
-- Activity logging for local changes
-- JSON export/import backups
-- Reset demo data
-- Mobile sidebar support
+## Portal boundary
 
-## Important
+This build is intentionally production-facing. It does not contain:
 
-No external services are connected yet. Data is stored only in the browser using `localStorage`.
+- fair payments or revenue
+- production profit or budget data
+- private fair agreements
+- negotiations
+- insurance information
+- executive-only notes
+- AI features
 
-Use **Settings → Export JSON backup** before clearing browser data or switching devices.
+Those belong in the future private **OATF Admin** portal.
 
-Open `index.html` locally or deploy the folder to GitHub Pages.
+## V0.03 features
 
+- Apple-inspired Today view
+- My Work view personalized for William or Spencer
+- connected fair, talent, task, contact, file, deadline, note, issue, and activity records
+- slide-over record details
+- favorites
+- recently viewed records
+- universal local search with Command/Ctrl + K
+- production contacts and follow-up center
+- talent readiness and missing-material detection
+- task risk and fair readiness calculations
+- local notifications
+- quick-create menu
+- drag-and-drop task board
+- autosave indicator
+- undo for supported actions
+- calendar
+- local activity timeline
+- local JSON export and import
+- responsive mobile dock
+- installable PWA shell
+- offline asset cache
+- local identity switcher for William and Spencer
+- day-of preview workspace
 
-## V0.02 — Smart Operations Layer
+## Local-first behavior
 
-- New Smart Brief executive view
-- Season-wide readiness score
-- Individual fair readiness scores
-- Automatic task risk scoring
-- Overdue and approaching deadline detection
-- Waiting/blocked task detection
-- Talent pipeline risk detection
-- Recommended next actions
-- Dependency mapping using “Blocked by”
-- Estimated remaining effort tracking
-- Weekly momentum dashboard
-- Automatic migration from V0.01 local data
-- Smart Brief shortcut in the top bar
+Data is stored in the current browser using localStorage. The app attempts to migrate compatible V0.01 and V0.02 local data when available.
+
+No database, email, cloud file storage, authentication provider, or external API is connected.
+
+## Upload
+
+Upload the contents of this folder to a static host such as GitHub Pages. Keep the relative folder structure intact.

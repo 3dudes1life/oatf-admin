@@ -1,0 +1,12 @@
+{
+  "name": "OATF OS Production Board",
+  "short_name": "OATF OS",
+  "description": "Shared production workspace for Out at the Fair.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#09070d",
+  "theme_color": "#09070d",
+  "icons": [
+    {"src":"assets/icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
