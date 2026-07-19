@@ -1,5 +1,19 @@
 # Changelog
 
+## V0.12 — Focused Workflow Release Candidate
+
+- Rebuilt Today as a focused operational dashboard
+- Added next-fair hero, four core metrics, three attention panels, Continue Working, and a compact status strip
+- Rebuilt Action Board into Do Now, Do Next, and Waiting lanes
+- Hid completed work and advanced complexity by default
+- Simplified default navigation to Today, Fairs, Action Board, Run of Show, Day-of, People, Files, and More
+- Added progressive disclosure for advanced OS tools
+- Replaced Release Center in the mobile dock with Day-of
+- Added phone-first card, toolbar, navigation, spacing, and touch-target rules
+- Added one-time V0.12 migration to Simple Production navigation
+- Added focused-workflow validation to Release Center
+- Updated cache, manifest, migration, and static tests
+
 ## V0.11 — Responsive Shell Release Candidate
 
 - Fixed the broken half-collapsed sidebar state

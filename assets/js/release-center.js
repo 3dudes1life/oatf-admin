@@ -10,7 +10,7 @@
   const esc = UI.esc;
   const now = () => Store.nowISO();
   const REQUIRED_VIEWS = ['today','mywork','fairs','talent','contacts','schedule','dayof','control','orchestration','oscenter','twin','stateengine','briefing','release'];
-  const REQUIRED_MODULES = ['OATFStore','OATFIntel','OATFUI','OATFKernel','OATFWorkflow','OATFTwin','OATFStateEngine','OATFShell'];
+  const REQUIRED_MODULES = ['OATFStore','OATFIntel','OATFUI','OATFKernel','OATFWorkflow','OATFTwin','OATFStateEngine','OATFShell','OATFSimplify'];
   const COLLECTIONS = ['fairs','contacts','talent','tasks','schedules','deadlines','files','notes','issues','handoffs','scenarios','decisions','stateCaptures','changeSets','incidents','packageHistory','spaces','activity'];
   const runtimeErrors = [];
   let lastResults = [];
@@ -154,7 +154,7 @@
 
   async function runTests({manual=true}={}){
     const syncTests=[
-      {id:'version',label:'Release storage version',run:()=>({pass:Store.STORAGE_KEY==='oatf-os-production-v011',detail:`Active key: ${Store.STORAGE_KEY}`})},
+      {id:'version',label:'Release storage version',run:()=>({pass:Store.STORAGE_KEY==='oatf-os-production-v012',detail:`Active key: ${Store.STORAGE_KEY}`})},
       {id:'portal',label:'Production permission boundary',run:()=>({pass:Store.state.meta?.portal==='production',detail:'Workspace is explicitly scoped to Production.'})},
       {id:'admin-boundary',label:'Admin data separation',run:exportBoundaryTest},
       {id:'views',label:'Required application views',run:()=>{
@@ -169,6 +169,12 @@
         const mode=window.OATFShell?.effectiveMode?.();
         const labels=[...document.querySelectorAll('.nav-link')].every(button=>button.dataset.navLabel);
         return {pass:Boolean(mode&&labels),detail:mode?`${mode} shell active at ${window.innerWidth}×${window.innerHeight}.`:'Responsive shell did not initialize.'};
+      }},
+      {id:'focused-workflow',label:'Focused Production workflow',run:()=>{
+        const core=['today','fairs','mywork','schedule','dayof','contacts','files'];
+        const corePresent=core.every(view=>document.querySelector(`.simplified-main-nav [data-view="${view}"]`));
+        const todayFocused=Boolean(document.querySelector('.focus-dashboard'));
+        return {pass:corePresent&&todayFocused&&Boolean(window.OATFSimplify),detail:corePresent&&todayFocused?'Simplified navigation and focused Today dashboard are active.':'Focused workflow did not initialize completely.'};
       }},
       {id:'ids',label:'Unique record IDs',run:uniqueIdsTest},
       {id:'references',label:'Connected-record integrity',run:referencesTest},
@@ -255,7 +261,7 @@
     const url=URL.createObjectURL(blob);
     const anchor=document.createElement('a');
     anchor.href=url;
-    anchor.download=`oatf-os-production-v011-backup-${new Date().toISOString().slice(0,10)}.json`;
+    anchor.download=`oatf-os-production-v012-backup-${new Date().toISOString().slice(0,10)}.json`;
     anchor.click();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
     Store.state.preferences.lastBackup=now();
@@ -269,7 +275,7 @@
     const decision=releaseDecision();
     const results=lastResults.length?lastResults:[];
     const lines=[
-      'OATF OS Production V0.11 — Release Candidate Report',
+      'OATF OS Production V0.12 — Release Candidate Report',
       `Generated: ${new Date().toLocaleString()}`,
       `Decision: ${decision.status}`,
       `Readiness score: ${releaseScore()}%`,
@@ -299,7 +305,7 @@
     const url=URL.createObjectURL(blob);
     const anchor=document.createElement('a');
     anchor.href=url;
-    anchor.download=`oatf-os-v011-release-report-${new Date().toISOString().slice(0,10)}.txt`;
+    anchor.download=`oatf-os-v012-release-report-${new Date().toISOString().slice(0,10)}.txt`;
     anchor.click();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
     UI.toast('Release report downloaded','The report contains no Admin-only information.');
@@ -376,7 +382,7 @@
     return `<article class="release-panel diagnostics-panel">
       <div class="release-panel-head"><div><span class="eyebrow">Local runtime health</span><h3>Diagnostics</h3></div><span class="release-chip ${runtimeErrors.length?'danger':'safe'}">${runtimeErrors.length?'Attention':'Healthy'}</span></div>
       <div class="diagnostic-stats">
-        <div><strong>0.11</strong><span>Release Candidate</span></div>
+        <div><strong>0.12</strong><span>Release Candidate</span></div>
         <div><strong>${counts}</strong><span>Local records</span></div>
         <div><strong>${Math.max(1,Math.round(exportSize/1024))} KB</strong><span>Workspace export</span></div>
         <div><strong>${runtimeErrors.length}</strong><span>Runtime errors</span></div><div><strong>${window.innerWidth}×${window.innerHeight}</strong><span>Viewport</span></div><div><strong id="connectionStatus">${navigator.onLine?'Online':'Offline'}</strong><span>Connection</span></div>
@@ -412,7 +418,7 @@
     const decision=releaseDecision();
     return `<section class="release-hero">
       <div>
-        <span class="eyebrow">V0.11 Release Candidate</span>
+        <span class="eyebrow">V0.12 Release Candidate</span>
         <h1>Stop adding features. Prove the operating system.</h1>
         <p>This release focuses on clarity, setup, testing, accessibility, boundaries, migration safety, and deployment readiness.</p>
         <div class="release-actions"><button class="button primary" data-release-tests>Run Release Tests</button><button class="button ghost" data-release-backup>Export Backup</button><button class="button ghost" data-download-release-report>Download Report</button></div>

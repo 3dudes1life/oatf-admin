@@ -118,38 +118,158 @@
   }
 
   function renderToday(){
-    const priorities=Intel.dueTasks('Production').slice(0,7);
-    const critical=Intel.productionActions().filter(x=>x.severity==='critical').length;
-    const waiting=Store.state.tasks.filter(t=>t.status==='waiting').length;
-    const complete=Intel.completedThisWeek('Production').length;
-    const next=Intel.nextFair(); const readiness=next?Intel.fairReadiness(next):0;
-    const scheduleWarnings=next?Intel.scheduleIssues(next.id).filter(x=>x.severity!=='info').length:0;
-    const follow=Intel.followUps().slice(0,5);
-    const recent=Store.state.recentViewed.map(x=>({...x,item:Store.get(x.type,x.id)})).filter(x=>x.item).slice(0,4);
-    const activity=Store.state.activity.slice(0,5);
+    const next=Intel.nextFair();
+    const readiness=next?Intel.fairReadiness(next):0;
+    const scheduleReadiness=next?Intel.scheduleReadiness(next.id):0;
+    const openTasks=Store.state.tasks.filter(task=>task.status!=='complete');
+    const waitingTasks=openTasks.filter(task=>task.status==='waiting'||task.blockedBy);
+    const doNow=openTasks.filter(task=>!waitingTasks.includes(task)&&(task.status==='inprogress'||Intel.taskRisk(task)>=55||(Intel.daysUntil(task.due)!==null&&Intel.daysUntil(task.due)<=3)));
+    const criticalActions=Intel.productionActions().filter(item=>item.severity==='critical').slice(0,2);
+    const priorities=Intel.dueTasks('Production').filter(task=>task.status!=='waiting'&&!task.blockedBy).slice(0,3);
+    const followUps=Intel.followUps().slice(0,3);
+    const waitingItems=[
+      ...waitingTasks.slice(0,3).map(task=>({kind:'task',id:task.id,name:task.title,reason:task.blockedBy||'Waiting on response',fairId:task.fairId,date:task.due})),
+      ...followUps
+    ].slice(0,3);
+    const recent=Store.state.recentViewed.map(entry=>({...entry,item:Store.get(entry.type,entry.id)})).filter(entry=>entry.item);
+    const lastOpened=recent[0]||null;
+    const nextTask=priorities[0]||doNow[0]||openTasks[0]||null;
+    const suggested=criticalActions[0]||Intel.productionActions().find(item=>item.kind==='schedule')||null;
+    const upcomingDeadline=Store.state.deadlines
+      .filter(item=>Intel.daysUntil(item.date)===null||Intel.daysUntil(item.date)>=0)
+      .sort((a,b)=>(Intel.daysUntil(a.date)??9999)-(Intel.daysUntil(b.date)??9999))[0];
+    const activityCount=Store.state.activity.filter(item=>Date.now()-new Date(item.createdAt||0).getTime()<72*60*60*1000).length;
+    const openIssues=Store.state.issues.filter(issue=>issue.status!=='Resolved').length;
+    const actionPair=item=>item&&item.id?`${item.kind||'task'}:${item.id}`:'';
+    const taskRow=(task,index)=>`<article class="focus-task-row">
+      <button class="focus-rank" data-complete-task="${task.id}" aria-label="Complete ${UI.esc(task.title)}">${index+1}</button>
+      <button class="focus-task-copy" data-open-record="task:${task.id}"><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short||'Production')} · ${UI.esc(task.description||task.blockedBy||'Production action')}</small></button>
+      <em>${UI.esc(Intel.relativeDate(task.due))}</em>
+    </article>`;
+    const exceptionRow=item=>`<button class="focus-exception-row" data-open-record="${UI.esc(actionPair(item))}">
+      <span>!</span><span><b>${UI.esc(item.title)}</b><small>${UI.esc(item.detail||'Production attention required')}</small></span><em>›</em>
+    </button>`;
+    const waitingRow=item=>`<button class="focus-waiting-row" data-open-record="${UI.esc(`${item.kind}:${item.id}`)}">
+      <span>${UI.esc((item.name||'?').split(/\s+/).map(word=>word[0]).join('').slice(0,2).toUpperCase())}</span>
+      <span><b>${UI.esc(item.name)}</b><small>${UI.esc(item.reason||'Waiting on response')}</small></span>
+      <em>${UI.esc(item.date?Intel.relativeDate(item.date):'Follow up')}</em>
+    </button>`;
+
     $('#todayContent').innerHTML=`
-      <div class="today-hero">
-        <section class="greeting-card"><span class="eyebrow">${Intel.greeting()}</span><h1>Production.</h1><p>${critical?`${critical} production exception${critical===1?' needs':'s need'} attention before routine work.`:'The shared Production Board is calm and ready to move.'}</p><div class="today-counts"><span class="critical"><b>${critical}</b> exceptions</span><span class="waiting"><b>${waiting}</b> waiting</span><span class="complete"><b>${complete}</b> completed this week</span><span><b>${Intel.seasonReadiness()}%</b> season readiness</span></div></section>
-        ${next?`<button class="next-fair-card" data-open-record="fair:${next.id}"><div><span class="eyebrow">Next fair</span><h3>${UI.esc(next.name)}</h3><p>${UI.esc(next.venue)} · ${UI.esc(Intel.formatDate(next.date))}</p></div><div><div class="countdown"><strong>${Math.max(0,next.days??0)}</strong><span>days away</span></div><div class="readiness-line"><div><span>Production readiness</span><b>${readiness}%</b></div><div class="meter"><i style="width:${readiness}%"></i></div></div><small class="schedule-health-note">${scheduleWarnings} active schedule warning${scheduleWarnings===1?'':'s'}</small></div></button>`:''}
-      </div>
-      <div class="today-grid"><section class="panel"><div class="panel-head"><div><span class="eyebrow">Focus</span><h3>Production priorities</h3><p>Highest-impact work across the shared board.</p></div><button class="text-button" data-view="mywork">Open Action Board →</button></div><div class="priority-list">${priorities.length?priorities.map(task=>`<div class="priority-row"><button class="check-button" data-complete-task="${task.id}">✓</button><button style="display:block;border:0;background:transparent;color:inherit;text-align:left;padding:0" data-open-record="task:${task.id}"><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short||'No fair')} · ${UI.esc(task.blockedBy?`Blocked by ${task.blockedBy}`:task.description||'Production task')}</small></button><em>${UI.esc(Intel.relativeDate(task.due))}</em></div>`).join(''):empty('Nothing urgent','The production queue is caught up.')}</div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">Continue</span><h3>Pick up where Production left off</h3></div></div><div class="continue-list">${recent.length?recent.map(entry=>`<button class="continue-row" data-open-record="${entry.type}:${entry.id}"><span class="record-icon">${UI.icon(entry.type)}</span><span><b>${UI.esc(UI.recordTitle(entry.type,entry.item))}</b><small>${UI.esc(UI.recordSubtitle(entry.type,entry.item))}</small></span><span>›</span></button>`).join(''):empty('Nothing viewed yet','Opened records will stay within reach.')}</div></section></div>
-      <div class="today-grid three"><section class="panel"><div class="panel-head"><div><span class="eyebrow">Waiting</span><h3>Follow-up queue</h3></div><button class="text-button" data-view="followups">Open center →</button></div><div class="followup-list">${follow.length?follow.map(item=>`<button class="followup-row" data-open-record="${item.kind}:${item.id}"><span class="priority-dot ${item.due<0?'critical':''}"></span><span><b>${UI.esc(item.name)}</b><small>${UI.esc(item.reason)}</small></span><em>${UI.esc(item.date?Intel.relativeDate(item.date):'Follow up')}</em></button>`).join(''):empty('No follow-ups due','No outreach is currently overdue.')}</div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">Fair health</span><h3>Readiness</h3></div></div><div class="continue-list">${Store.state.fairs.map(item=>{const score=Intel.fairReadiness(item);return `<button class="continue-row" data-open-record="fair:${item.id}"><span class="record-icon">${item.code}</span><span><b>${UI.esc(item.short)}</b><small>${UI.esc(Intel.fairStatus(item).label)} · ROS ${Intel.scheduleReadiness(item.id)}%</small><div class="meter" style="margin-top:6px"><i style="width:${score}%"></i></div></span><span>${score}%</span></button>`}).join('')}</div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">Recent changes</span><h3>Activity</h3></div><button class="text-button" data-view="activity">Full log →</button></div><div class="recent-activity-list">${activity.map(activityRow).join('')}</div></section></div>`;
+      <section class="focus-dashboard">
+        ${next?`<button class="focus-next-fair" data-open-record="fair:${next.id}">
+          <div><span class="eyebrow">Next Fair</span><h2>${UI.esc(next.name)}</h2><p>▦ ${UI.esc(Intel.formatDate(next.date))}<i></i><strong>${Math.max(0,next.days??0)} days to go</strong></p></div>
+          <span class="focus-next-arrow">›</span>
+        </button>`:''}
+
+        <div class="focus-metrics">
+          <button class="focus-metric readiness" ${next?`data-open-record="fair:${next.id}"`:''}>
+            <div class="focus-ring" style="--score:${readiness}"><strong>${readiness}%</strong></div>
+            <div><span>Production Readiness</span><b>${readiness>=75?'On Track':readiness>=50?'Needs Focus':'At Risk'}</b><small>Schedule ${scheduleReadiness}% ready</small></div>
+          </button>
+          <button class="focus-metric" data-view="mywork"><span>Open Actions</span><strong>${openTasks.length}</strong><small><b>${doNow.length} Do Now</b> · ${Math.max(0,openTasks.length-doNow.length-waitingTasks.length)} Do Next · ${waitingTasks.length} Waiting</small></button>
+          <button class="focus-metric" data-view="followups"><span>Waiting On</span><strong>${waitingItems.length}</strong><small>${waitingTasks.length} internal · ${followUps.length} people</small></button>
+          <button class="focus-metric critical" data-view="control"><span>Critical Issues</span><strong>${criticalActions.length+openIssues}</strong><small>${criticalActions.length+openIssues?'Needs attention':'Nothing critical'}</small></button>
+        </div>
+
+        <div class="focus-three-column">
+          <section class="focus-panel">
+            <header><div><span class="eyebrow">Focus</span><h3>Top Priorities</h3></div></header>
+            <div class="focus-list">${priorities.length?priorities.map(taskRow).join(''):empty('Nothing urgent','Production is caught up.')}</div>
+            <button class="focus-panel-link" data-view="mywork">View Action Board →</button>
+          </section>
+
+          <section class="focus-panel">
+            <header><div><span class="eyebrow">Exceptions</span><h3>Critical Exceptions</h3></div></header>
+            <div class="focus-list">${criticalActions.length?criticalActions.map(exceptionRow).join(''):empty('No critical exceptions','Nothing is blocking Production right now.')}</div>
+            <button class="focus-panel-link danger" data-view="control">Review Exceptions →</button>
+          </section>
+
+          <section class="focus-panel">
+            <header><div><span class="eyebrow">People</span><h3>Waiting On Others</h3></div></header>
+            <div class="focus-list">${waitingItems.length?waitingItems.map(waitingRow).join(''):empty('Nothing waiting','No external responses are holding up Production.')}</div>
+            <button class="focus-panel-link" data-view="followups">Open Follow-Up →</button>
+          </section>
+        </div>
+
+        <section class="focus-continue">
+          <header><div><span class="eyebrow">Continue</span><h3>Pick up where Production left off</h3></div></header>
+          <div class="focus-continue-grid">
+            <button ${lastOpened?`data-open-record="${lastOpened.type}:${lastOpened.id}"`:'data-view="fairs"'}><small>Last opened</small><span>${lastOpened?UI.icon(lastOpened.type):'◌'}</span><div><b>${lastOpened?UI.esc(UI.recordTitle(lastOpened.type,lastOpened.item)):'Open a fair'}</b><em>${lastOpened?UI.esc(UI.recordSubtitle(lastOpened.type,lastOpened.item)):'Choose the active workspace'}</em></div></button>
+            <button ${nextTask?`data-open-record="task:${nextTask.id}"`:'data-view="mywork"'}><small>Next up</small><span>☷</span><div><b>${nextTask?UI.esc(nextTask.title):'Review Action Board'}</b><em>${nextTask?UI.esc(fair(nextTask.fairId)?.short||'Production'):'No next task selected'}</em></div></button>
+            <button ${suggested?`data-open-record="${UI.esc(actionPair(suggested))}"`:'data-view="schedule"'}><small>Suggested</small><span>◇</span><div><b>${suggested?UI.esc(suggested.title):'Review Run of Show'}</b><em>${suggested?UI.esc(suggested.detail||'Production suggestion'):'Confirm stage readiness'}</em></div></button>
+            <button class="focus-continue-cta" ${nextTask?`data-open-record="task:${nextTask.id}"`:'data-view="mywork"'}>Continue <span>→</span></button>
+          </div>
+        </section>
+
+        <footer class="focus-status-strip">
+          <span><small>Today’s Focus</small><b>${criticalActions.length?'Clear critical exceptions':'Keep momentum going'}</b></span>
+          <span><small>Next Milestone</small><b>${upcomingDeadline?UI.esc(upcomingDeadline.title):'Schedule Lock'} ${upcomingDeadline?`· ${UI.esc(Intel.relativeDate(upcomingDeadline.date))}`:''}</b></span>
+          <span><small>Run of Show</small><b>${scheduleReadiness}% ready</b></span>
+          <span><small>Recent Updates</small><b>${activityCount} in 72 hours</b></span>
+        </footer>
+      </section>`;
   }
 
   function empty(title,message){ return `<div class="empty-state"><div><b>${UI.esc(title)}</b><p>${UI.esc(message)}</p></div></div>`; }
   function activityRow(a){ return `<div class="activity-item"><i></i><div><b>${UI.esc(a.actor)}</b><p>${UI.esc(a.action)}</p></div><time>${UI.esc(Intel.formatTimeAgo(a.timestamp))}</time></div>`; }
 
   function renderMyWork(){
-    const actions=Intel.productionActions();
-    const critical=actions.filter(x=>x.severity==='critical').slice(0,10);
-    const waiting=Store.state.tasks.filter(t=>t.status==='waiting').sort((a,b)=>Intel.taskRisk(b)-Intel.taskRisk(a));
-    const quickWins=Store.state.tasks.filter(t=>t.status!=='complete'&&!t.blockedBy&&Number(t.estimatedHours||1)<=1).sort((a,b)=>Intel.taskRisk(b)-Intel.taskRisk(a)).slice(0,8);
-    const scheduleRisks=actions.filter(x=>x.kind==='schedule').slice(0,10);
-    const completed=Store.state.tasks.filter(t=>t.status==='complete').sort((a,b)=>new Date(b.completedAt||b.updatedAt)-new Date(a.completedAt||a.updatedAt)).slice(0,8);
-    const hours=Store.state.tasks.filter(t=>t.status!=='complete').reduce((sum,t)=>sum+Number(t.estimatedHours||1),0);
-    const actionRow=item=>{ if(item.kind==='schedule')return `<button class="smart-action-row ${item.severity}" data-open-record="schedule:${item.id}"><span>≡</span><span><b>${UI.esc(item.title)}</b><small>${UI.esc(fair(item.fairId)?.short||'Schedule')} · ${UI.esc(item.detail)}</small></span><em>Review</em></button>`; const task=Store.get('task',item.id); if(task)return `<div class="priority-row"><button class="check-button" data-complete-task="${task.id}">✓</button><button style="display:block;border:0;background:transparent;color:inherit;text-align:left;padding:0" data-open-record="task:${task.id}"><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short||'No fair')} · ${UI.esc(task.blockedBy||task.description||'Production task')}</small></button><em>${UI.esc(Intel.relativeDate(task.due))}</em></div>`; return `<button class="smart-action-row ${item.severity}" data-open-record="${item.kind}:${item.id}"><span>↗</span><span><b>${UI.esc(item.title)}</b><small>${UI.esc(item.detail)}</small></span><em>Open</em></button>`; };
-    $('#myWorkContent').innerHTML=`<section class="work-hero action-hero"><div><span class="eyebrow">Shared command queue</span><h1>Production Action Board.</h1><p>One shared operational queue for the entire production team.</p></div><div class="work-stats"><div class="work-stat"><strong>${critical.length}</strong><span>critical exceptions</span></div><div class="work-stat"><strong>${waiting.length}</strong><span>waiting</span></div><div class="work-stat"><strong>${hours}h</strong><span>estimated effort</span></div></div></section><div class="action-summary-strip"><div><span>Schedule health</span><b>${Math.round(Store.state.fairs.reduce((s,f)=>s+Intel.scheduleReadiness(f.id),0)/Math.max(1,Store.state.fairs.length))}%</b></div><div><span>Follow-ups due</span><b>${Intel.followUps().filter(x=>x.due===null||x.due<=0).length}</b></div><div><span>Open issues</span><b>${Store.state.issues.filter(x=>x.status!=='Resolved').length}</b></div><button class="button ghost" data-view="schedule">Open Run of Show →</button></div><div class="work-sections"><section class="panel"><div class="panel-head"><div><span class="eyebrow">Exceptions</span><h3>Handle first</h3></div></div><div class="work-list">${critical.length?critical.map(actionRow).join(''):empty('No critical exceptions','Production has no red-alert items.')}</div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">Schedule intelligence</span><h3>Run-of-show risks</h3></div><button class="text-button" data-view="schedule">Open schedule →</button></div><div class="work-list">${scheduleRisks.length?scheduleRisks.map(actionRow).join(''):empty('Schedules are healthy','No active run-of-show conflicts.')}</div></section>${workPanel('Waiting on someone',waiting,'Nothing waiting','No outside blockers are recorded.')}${workPanel('Quick wins',quickWins,'No quick wins queued','All remaining work needs more time or information.')}<section class="panel"><div class="panel-head"><div><span class="eyebrow">Done</span><h3>Recently finished</h3></div></div><div class="work-list">${completed.length?completed.map(task=>`<button class="continue-row" data-open-record="task:${task.id}"><span class="record-icon">✓</span><span><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short||'No fair')} · ${UI.esc(Intel.formatTimeAgo(task.completedAt||task.updatedAt))}</small></span><span>›</span></button>`).join(''):empty('No completed tasks','Finished work will collect here.')}</div></section></div>`;
+    const unfinished=Store.state.tasks.filter(task=>task.status!=='complete');
+    const waiting=unfinished.filter(task=>task.status==='waiting'||task.blockedBy||task.dependsOnTaskId&&Store.get('task',task.dependsOnTaskId)?.status!=='complete')
+      .sort((a,b)=>Intel.taskRisk(b)-Intel.taskRisk(a));
+    const waitingIds=new Set(waiting.map(task=>task.id));
+    const doNow=unfinished.filter(task=>!waitingIds.has(task.id)&&(task.status==='inprogress'||Intel.taskRisk(task)>=55||(Intel.daysUntil(task.due)!==null&&Intel.daysUntil(task.due)<=3)))
+      .sort((a,b)=>Intel.taskRisk(b)-Intel.taskRisk(a));
+    const nowIds=new Set(doNow.map(task=>task.id));
+    const doNext=unfinished.filter(task=>!waitingIds.has(task.id)&&!nowIds.has(task.id))
+      .sort((a,b)=>Intel.taskRisk(b)-Intel.taskRisk(a));
+    const critical=Intel.productionActions().filter(item=>item.severity==='critical').length;
+    const next=Intel.nextFair();
+    const readiness=next?Intel.fairReadiness(next):0;
+
+    const lane=(title,eyebrow,tasks,tone,emptyTitle,emptyText)=>`<section class="guided-lane ${tone}">
+      <header><div><span class="eyebrow">${eyebrow}</span><h3>${title}</h3></div><strong>${tasks.length}</strong></header>
+      <div>${tasks.slice(0,6).map(task=>`<article class="guided-task">
+        <button class="guided-check" data-complete-task="${task.id}" aria-label="Complete ${UI.esc(task.title)}">✓</button>
+        <button class="guided-task-copy" data-open-record="task:${task.id}"><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short||'Production')} · ${UI.esc(task.owner||'Production')}</small></button>
+        <em>${UI.esc(task.blockedBy?`Waiting: ${task.blockedBy}`:Intel.relativeDate(task.due))}</em>
+      </article>`).join('')||empty(emptyTitle,emptyText)}</div>
+      ${tasks.length>6?`<button class="guided-more" data-view="tasks">View ${tasks.length-6} more →</button>`:''}
+    </section>`;
+
+    $('#myWorkContent').innerHTML=`
+      <section class="guided-action-board">
+        <header class="guided-board-hero">
+          <div><span class="eyebrow">Guided Production Flow</span><h1>Action Board</h1><p>Three lanes. Do the work in front of you and let the OS keep the complexity underneath.</p></div>
+          <div class="guided-board-summary">
+            <span><strong>${doNow.length}</strong><small>Do Now</small></span>
+            <span><strong>${doNext.length}</strong><small>Do Next</small></span>
+            <span><strong>${waiting.length}</strong><small>Waiting</small></span>
+          </div>
+        </header>
+
+        ${next?`<button class="guided-fair-progress" data-open-record="fair:${next.id}">
+          <span><small>Current fair</small><b>${UI.esc(next.short)}</b></span>
+          <div><span>Production readiness</span><i><b style="width:${readiness}%"></b></i></div>
+          <strong>${readiness}%</strong>
+          <em>${critical?`${critical} exception${critical===1?'':'s'} need attention`:'Production is moving cleanly'}</em>
+        </button>`:''}
+
+        <div class="guided-lanes">
+          ${lane('Do Now','Current focus',doNow,'now','Nothing urgent','The immediate queue is clear.')}
+          ${lane('Do Next','Upcoming',doNext,'next','Nothing queued next','Add work when the current focus is complete.')}
+          ${lane('Waiting','Blocked or external',waiting,'waiting','Nothing waiting','No tasks are blocked by outside information.')}
+        </div>
+
+        <footer class="guided-board-footer">
+          <button class="button ghost" data-view="tasks">Open All Tasks</button>
+          <button class="button ghost" data-view="followups">Open Follow-Up</button>
+          <button class="button primary" data-view="schedule">Continue to Run of Show →</button>
+        </footer>
+      </section>`;
   }
+
   function workPanel(title,items,emptyTitle,emptyMessage){ return `<section class="panel"><div class="panel-head"><div><span class="eyebrow">Work queue</span><h3>${UI.esc(title)}</h3></div></div><div class="work-list">${items.length?items.map(task=>`<div class="priority-row"><button class="check-button" data-complete-task="${task.id}">✓</button><button style="display:block;border:0;background:transparent;color:inherit;text-align:left;padding:0" data-open-record="task:${task.id}"><b>${UI.esc(task.title)}</b><small>${UI.esc(fair(task.fairId)?.short || 'No fair')} · ${UI.esc(task.blockedBy || task.description || 'Production task')}</small></button><em>${UI.esc(Intel.relativeDate(task.due))}</em></div>`).join(''):empty(emptyTitle,emptyMessage)}</div></section>`; }
 
   function renderFairs(){

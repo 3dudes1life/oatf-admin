@@ -1,4 +1,4 @@
 OATF OS — Production
-Version: 0.11
-Release: Responsive Shell Release Candidate
+Version: 0.12
+Release: Focused Workflow Release Candidate
 Portal: Shared Production workspace
