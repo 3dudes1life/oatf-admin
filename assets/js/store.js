@@ -1,17 +1,17 @@
 (() => {
   'use strict';
 
-  const STORAGE_KEY = 'oatf-os-production-v009';
-  const LEGACY_KEYS = ['oatf-os-production-v008','oatf-os-production-v007','oatf-os-production-v006','oatf-os-production-v005','oatf-os-production-v004','oatf-os-production-v003','oatf-admin-v002','oatf-admin-v001'];
+  const STORAGE_KEY = 'oatf-os-production-v010';
+  const LEGACY_KEYS = ['oatf-os-production-v009','oatf-os-production-v008','oatf-os-production-v007','oatf-os-production-v006','oatf-os-production-v005','oatf-os-production-v004','oatf-os-production-v003','oatf-admin-v002','oatf-admin-v001'];
   const SESSION_KEY = 'oatf-os-session';
 
   const nowISO = () => new Date().toISOString();
   const uid = prefix => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
 
   const seed = {
-    meta:{version:'0.09',portal:'production',createdAt:'2026-07-18T16:00:00-07:00'},
+    meta:{version:'0.10',portal:'production',releaseChannel:'candidate',createdAt:'2026-07-18T16:00:00-07:00'},
     currentUser:'Production',
-    preferences:{lastView:'today',lastRecord:null,sidebarCollapsed:false,lastSearch:'',dismissedNotifications:[],scheduleFairId:'fair-oc',scheduleMode:'internal',dayOfFairId:'fair-oc',dayOfSlotId:'schedule-oc-gss',dayOfChecks:{},selectedLens:'exceptions',reportFairId:'fair-oc',reportType:'production-brief',lastCheckpoint:'',lastBackup:'',systemDensity:'comfortable',workflowFairId:'fair-oc',workflowPhase:'all',workflowMode:'orchestration',focusMode:'planning',osFairId:'fair-oc',automationAutoRun:true,historyFairId:'all',inboxFilter:'open',twinFairId:'fair-oc',twinScenarioType:'performer-cancel',twinHorizon:14,activeSpaceId:'space-command',relationshipDepth:'focused',stateFairId:'fair-oc',stateTab:'captures',packageMergeStrategy:'newest',incidentFairId:'fair-oc'},
+    preferences:{lastView:'today',lastRecord:null,sidebarCollapsed:false,lastSearch:'',dismissedNotifications:[],scheduleFairId:'fair-oc',scheduleMode:'internal',dayOfFairId:'fair-oc',dayOfSlotId:'schedule-oc-gss',dayOfChecks:{},selectedLens:'exceptions',reportFairId:'fair-oc',reportType:'production-brief',lastCheckpoint:'',lastBackup:'',systemDensity:'comfortable',workflowFairId:'fair-oc',workflowPhase:'all',workflowMode:'orchestration',focusMode:'planning',osFairId:'fair-oc',automationAutoRun:true,historyFairId:'all',inboxFilter:'open',twinFairId:'fair-oc',twinScenarioType:'performer-cancel',twinHorizon:14,activeSpaceId:'space-command',relationshipDepth:'focused',stateFairId:'fair-oc',stateTab:'captures',packageMergeStrategy:'newest',incidentFairId:'fair-oc',navigationMode:'full',textScale:'normal',reducedMotion:false,highContrast:false,focusOutlines:true,onboardingDismissed:false,releaseTestLastRun:'',releaseTestPassCount:0,releaseTestFailCount:0,releaseCandidateAccepted:false},
     recentViewed:[],
     fairs:[
       {id:'fair-riv',name:'Riverside County Fair',short:'Riverside',code:'RIV',date:'2027-02-20',location:'Indio, CA',venue:'National Date Festival',stage:'Main Stage',status:'On track',summary:'Early-season production workspace for Riverside County Fair.',accent:'#ff7b56',favoriteBy:['William'],createdAt:'2026-07-10T09:00:00-07:00',updatedAt:'2026-07-17T13:30:00-07:00'},
@@ -153,7 +153,7 @@
 
   function upgradeState(input){
     const upgraded = input && typeof input === 'object' ? input : clone(seed);
-    upgraded.meta = {...(upgraded.meta || {}),version:'0.09',portal:'production'};
+    upgraded.meta = {...(upgraded.meta || {}),version:'0.10',portal:'production',releaseChannel:'candidate'};
     upgraded.currentUser = 'Production';
     upgraded.preferences = {...seed.preferences,...(upgraded.preferences || {})};
     upgraded.recentViewed = Array.isArray(upgraded.recentViewed) ? upgraded.recentViewed : [];
@@ -167,6 +167,17 @@
     upgraded.incidents = Array.isArray(upgraded.incidents) ? upgraded.incidents : clone(seed.incidents || []);
     upgraded.packageHistory = Array.isArray(upgraded.packageHistory) ? upgraded.packageHistory : [];
     upgraded.spaces = Array.isArray(upgraded.spaces) && upgraded.spaces.length ? upgraded.spaces : clone(seed.spaces || []);
+    upgraded.preferences = {...(seed.preferences || {}),...(upgraded.preferences || {})};
+    upgraded.preferences.navigationMode = upgraded.preferences.navigationMode || 'full';
+    upgraded.preferences.textScale = upgraded.preferences.textScale || 'normal';
+    upgraded.preferences.reducedMotion = Boolean(upgraded.preferences.reducedMotion);
+    upgraded.preferences.highContrast = Boolean(upgraded.preferences.highContrast);
+    upgraded.preferences.focusOutlines = upgraded.preferences.focusOutlines !== false;
+    upgraded.preferences.onboardingDismissed = Boolean(upgraded.preferences.onboardingDismissed);
+    upgraded.preferences.releaseTestLastRun = upgraded.preferences.releaseTestLastRun || '';
+    upgraded.preferences.releaseTestPassCount = Number(upgraded.preferences.releaseTestPassCount || 0);
+    upgraded.preferences.releaseTestFailCount = Number(upgraded.preferences.releaseTestFailCount || 0);
+    upgraded.preferences.releaseCandidateAccepted = Boolean(upgraded.preferences.releaseCandidateAccepted);
     upgraded.tasks = Array.isArray(upgraded.tasks) ? upgraded.tasks.map(task => ({
       dependsOnTaskId:task.dependsOnTaskId || '',
       phase:task.phase || '',

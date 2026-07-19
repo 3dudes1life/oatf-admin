@@ -353,3 +353,71 @@ Universal search now understands:
 - incident replay
 
 No AI, budgets, revenue, fair payments, private agreements, negotiations, Admin credentials, or executive-only notes are included.
+
+
+## V0.10 — Release Candidate
+
+V0.10 stops expanding the feature surface and adds the controls needed to test OATF OS as a coherent Production product.
+
+### Release Center
+
+- guided Production setup
+- local QA test suite
+- runtime error monitor
+- readiness score
+- Ready / Conditional / Hold launch gate
+- backup controls
+- release report export
+
+### Navigation cleanup
+
+The sidebar is grouped into:
+
+- Core Production
+- Operations
+- System
+- Release
+
+Production can switch between:
+
+- Simple Production navigation
+- Full OS navigation
+
+### Accessibility and operator comfort
+
+- compact, normal, or large interface text
+- reduced motion
+- high contrast
+- visible keyboard focus outlines
+- built-in keyboard shortcut overlay
+
+### Permission boundary
+
+The Production portal explicitly excludes Admin-only records.
+
+OATF Admin remains a separate future deployment. Real password enforcement must happen through backend or hosting authentication rather than static browser JavaScript.
+
+### Local QA checks
+
+The in-app suite checks:
+
+- release storage version
+- Production portal boundary
+- absence of Admin-only collections
+- required application views
+- required JavaScript modules
+- unique IDs
+- record references
+- run-of-show times
+- browser storage
+- runtime errors
+- service worker support
+- backup readiness
+- PWA manifest availability
+
+### Release artifacts
+
+- CHANGELOG.md
+- DEPLOYMENT.md
+- tests/smoke-check.mjs
+- downloadable Release Report

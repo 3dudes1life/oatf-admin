@@ -1,7 +1,7 @@
 {
   "name": "OATF OS Production",
   "short_name": "OATF OS",
-  "description": "Local-first Production OS with state captures, visual diffs, transactional change sets, fair-package exchange, conflict resolution, incident replay, digital twin simulation, and workflow orchestration.",
+  "description": "OATF OS Production V0.10 Release Candidate with guided setup, local QA, accessibility controls, diagnostics, navigation modes, permission boundaries, and deployment readiness.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#09070d",
@@ -13,5 +13,6 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "version": "0.10"
 }

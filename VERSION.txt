@@ -1,4 +1,4 @@
 OATF OS — Production
-Version: 0.09
-Release: Production State Engine
+Version: 0.10
+Release: Release Candidate
 Portal: Shared Production workspace
