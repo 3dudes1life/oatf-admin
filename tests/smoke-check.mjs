@@ -16,7 +16,8 @@ const requiredFiles = [
   'assets/js/kernel.js',
   'assets/js/twin.js',
   'assets/js/state-engine.js',
-  'assets/js/release-center.js'
+  'assets/js/release-center.js',
+  'assets/js/shell.js'
 ];
 
 const failures = [];
@@ -30,24 +31,26 @@ for (const view of ['today','mywork','fairs','talent','contacts','schedule','day
   if (!html.includes(`id="view-${view}"`)) failures.push(`Missing view-${view}`);
 }
 
-if (!html.includes('assets/js/release-center.js')) failures.push('Release Center script is not loaded.');
+if (!html.includes('assets/js/release-center.js',
+  'assets/js/shell.js')) failures.push('Release Center script is not loaded.');
 
 const store = fs.readFileSync(path.join(root, 'assets/js/store.js'), 'utf8');
-if (!store.includes("oatf-os-production-v010")) failures.push('V0.10 storage key not found.');
-if (!store.includes("version:'0.10'")) failures.push('V0.10 state version not found.');
+if (!store.includes("oatf-os-production-v011")) failures.push('V0.11 storage key not found.');
+if (!store.includes("version:'0.11'")) failures.push('V0.11 state version not found.');
 
 const serviceWorker = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
-if (!serviceWorker.includes('oatf-os-production-v010')) failures.push('V0.10 cache name not found.');
+if (!serviceWorker.includes('oatf-os-production-v011')) failures.push('V0.11 cache name not found.');
 if (!serviceWorker.includes('release-center.js')) failures.push('Release Center missing from offline cache.');
+if (!serviceWorker.includes('shell.js')) failures.push('Responsive shell missing from offline cache.');
 
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8'));
-if (manifest.version !== '0.10') failures.push('Manifest version is not 0.10.');
+if (manifest.version !== '0.11') failures.push('Manifest version is not 0.11.');
 
 if (failures.length) {
-  console.error('OATF OS V0.10 smoke check FAILED');
+  console.error('OATF OS V0.11 smoke check FAILED');
   failures.forEach(failure => console.error(` - ${failure}`));
   process.exit(1);
 }
 
-console.log('OATF OS V0.10 smoke check PASSED');
+console.log('OATF OS V0.11 smoke check PASSED');
 console.log(`Validated ${requiredFiles.length} required files and 13 application views.`);

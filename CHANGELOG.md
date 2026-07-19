@@ -1,5 +1,22 @@
 # Changelog
 
+## V0.11 — Responsive Shell Release Candidate
+
+- Fixed the broken half-collapsed sidebar state
+- Added intentional Full, Compact Rail, and Mobile Drawer shells
+- Added Auto sidebar fit based on viewport width
+- Compact rail now hides section headings and record lists correctly
+- Compact rail temporarily expands on hover or keyboard focus
+- Added navigation labels and native tooltips in compact mode
+- Kept the sidebar expand/collapse control available in both desktop states
+- Added medium-desktop spacing controls: Roomy, Balanced, and Dense
+- Polished Run of Show toolbar wrapping, metrics, stage rows, and side panels
+- Added maximum workspace width for ultra-wide displays
+- Added viewport and connection diagnostics
+- Added first-run compact-layout guidance
+- Added responsive-shell QA validation
+- Updated migration, cache, manifest, docs, and smoke tests
+
 ## V0.10 — Release Candidate
 
 - Added Release Center

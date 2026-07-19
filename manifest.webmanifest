@@ -1,7 +1,7 @@
 {
   "name": "OATF OS Production",
   "short_name": "OATF OS",
-  "description": "OATF OS Production V0.10 Release Candidate with guided setup, local QA, accessibility controls, diagnostics, navigation modes, permission boundaries, and deployment readiness.",
+  "description": "OATF OS Production V0.11 Release Candidate with intentional full, compact, and mobile shells, responsive Run of Show layouts, viewport diagnostics, accessibility controls, and local QA.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#09070d",
@@ -14,5 +14,5 @@
       "purpose": "any maskable"
     }
   ],
-  "version": "0.10"
+  "version": "0.11"
 }

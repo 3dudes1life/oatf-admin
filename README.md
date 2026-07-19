@@ -421,3 +421,42 @@ The in-app suite checks:
 - DEPLOYMENT.md
 - tests/smoke-check.mjs
 - downloadable Release Report
+
+
+## V0.11 — Responsive Shell Release Candidate
+
+V0.11 fixes the deployed layout behavior observed on a medium-width desktop browser.
+
+### Intentional shell states
+
+- Wide desktop: full labeled sidebar
+- Medium desktop: compact icon rail
+- Mobile: off-canvas navigation drawer and bottom dock
+
+The compact rail:
+
+- hides group headings correctly
+- keeps icons evenly sized
+- keeps the selected item proportional
+- provides native tooltips
+- expands temporarily on hover or keyboard focus
+- does not permanently squeeze the workspace while expanded
+
+### Run of Show polish
+
+At medium widths:
+
+- the toolbar wraps predictably
+- metrics become a 2×2 grid
+- the schedule uses the full workspace width
+- side intelligence panels move below the schedule
+- stage rows use tighter, more stable columns
+- headings and spacing scale down without becoming cramped
+
+### Release Center additions
+
+- Auto / Always Full / Always Compact sidebar behavior
+- Roomy / Balanced / Dense medium-screen spacing
+- current viewport and shell readout
+- online/offline diagnostic
+- responsive-shell QA test

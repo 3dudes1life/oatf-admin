@@ -1387,3 +1387,276 @@ body[data-focus-outlines="minimal"] :focus-visible{outline:1px solid rgba(255,25
   .release-actions{flex-direction:column}
   .release-actions .button{width:100%}
 }
+
+
+/* =========================================================
+   V0.11 — RESPONSIVE APPLICATION SHELL + ROS POLISH
+   ========================================================= */
+
+:root{
+  --sidebar-compact:88px;
+  --workspace-max:1680px;
+}
+
+html,body,#appShell,.app-shell{min-width:0;min-height:100%}
+body[data-shell-mode="full"]{--active-sidebar:var(--sidebar)}
+body[data-shell-mode="compact"]{--active-sidebar:var(--sidebar-compact)}
+body[data-shell-mode="mobile"]{--active-sidebar:0px}
+
+.sidebar{
+  overflow-x:visible;
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.12) transparent
+}
+.sidebar::-webkit-scrollbar{width:5px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:999px}
+.app-main{min-width:0;background:var(--bg)}
+.view-stack{
+  width:100%;
+  max-width:var(--workspace-max);
+  margin-inline:auto;
+}
+
+.sidebar.collapsed{
+  width:var(--sidebar-compact);
+  padding-inline:11px;
+  overflow-x:visible
+}
+.sidebar.collapsed .brand-button>span:last-child,
+.sidebar.collapsed .nav-link b,
+.sidebar.collapsed .nav-link em,
+.sidebar.collapsed .sidebar-section,
+.sidebar.collapsed .user-switcher>span:nth-child(2),
+.sidebar.collapsed .user-switcher i,
+.sidebar.collapsed .nav-group-label{
+  display:none
+}
+.sidebar.collapsed .sidebar-head{
+  display:grid;
+  grid-template-columns:1fr;
+  justify-items:center;
+  gap:10px;
+  padding-inline:0
+}
+.sidebar.collapsed .brand-button{justify-content:center}
+.sidebar.collapsed .brand-mark.small{width:44px;height:44px;border-radius:14px}
+.sidebar.collapsed .collapse-sidebar{
+  display:grid;
+  position:relative;
+  width:34px;
+  height:30px;
+  font-size:1rem
+}
+.sidebar.collapsed .main-nav{gap:6px}
+.sidebar.collapsed .nav-link{
+  width:52px;
+  height:48px;
+  margin-inline:auto;
+  grid-template-columns:1fr;
+  justify-items:center;
+  padding:0;
+  border-radius:14px
+}
+.sidebar.collapsed .nav-link>span{font-size:1.04rem}
+.sidebar.collapsed .nav-link.active{
+  background:linear-gradient(145deg,rgba(255,62,152,.22),rgba(140,99,255,.16));
+  box-shadow:inset 3px 0 var(--pink),0 10px 26px rgba(0,0,0,.18)
+}
+.sidebar.collapsed .user-switcher{
+  width:52px;
+  margin-inline:auto;
+  grid-template-columns:1fr;
+  justify-items:center;
+  padding:7px
+}
+.sidebar.collapsed+.app-main{margin-left:var(--sidebar-compact)}
+
+/* Compact rail hover expansion: overlays instead of squeezing the workspace. */
+@media(min-width:961px){
+  .sidebar.collapsed:hover,
+  .sidebar.collapsed:focus-within{
+    width:var(--sidebar);
+    padding-inline:14px;
+    box-shadow:28px 0 70px rgba(0,0,0,.48)
+  }
+  .sidebar.collapsed:hover .brand-button>span:last-child,
+  .sidebar.collapsed:focus-within .brand-button>span:last-child,
+  .sidebar.collapsed:hover .nav-link b,
+  .sidebar.collapsed:focus-within .nav-link b,
+  .sidebar.collapsed:hover .nav-link em,
+  .sidebar.collapsed:focus-within .nav-link em,
+  .sidebar.collapsed:hover .sidebar-section,
+  .sidebar.collapsed:focus-within .sidebar-section,
+  .sidebar.collapsed:hover .user-switcher>span:nth-child(2),
+  .sidebar.collapsed:focus-within .user-switcher>span:nth-child(2),
+  .sidebar.collapsed:hover .user-switcher i,
+  .sidebar.collapsed:focus-within .user-switcher i,
+  .sidebar.collapsed:hover .nav-group-label,
+  .sidebar.collapsed:focus-within .nav-group-label{
+    display:block
+  }
+  .sidebar.collapsed:hover .sidebar-head,
+  .sidebar.collapsed:focus-within .sidebar-head{
+    display:flex;
+    justify-content:space-between;
+    padding:3px 5px 17px
+  }
+  .sidebar.collapsed:hover .main-nav,
+  .sidebar.collapsed:focus-within .main-nav{gap:3px}
+  .sidebar.collapsed:hover .nav-link,
+  .sidebar.collapsed:focus-within .nav-link{
+    width:100%;
+    height:43px;
+    margin:0;
+    grid-template-columns:30px 1fr auto;
+    justify-items:initial;
+    padding:0 10px
+  }
+  .sidebar.collapsed:hover .user-switcher,
+  .sidebar.collapsed:focus-within .user-switcher{
+    width:100%;
+    grid-template-columns:38px 1fr auto;
+    justify-items:initial;
+    padding:8px
+  }
+}
+
+/* Medium desktop / windowed browser: intentional icon rail, never half-collapsed. */
+@media(min-width:961px) and (max-width:1320px){
+  body[data-shell-mode="compact"] .app-main{margin-left:var(--sidebar-compact)}
+  body[data-shell-mode="compact"] .topbar{padding-inline:20px}
+  body[data-shell-mode="compact"] .view-stack{padding:22px 22px 100px}
+  body[data-shell-mode="compact"] .view-intro{
+    align-items:flex-start;
+    margin-bottom:20px
+  }
+  body[data-shell-mode="compact"] .view-intro h1{
+    font-size:clamp(2.55rem,4.1vw,3.65rem)
+  }
+  body[data-shell-mode="compact"] .view-intro p{max-width:650px}
+  body[data-shell-mode="compact"] .search-trigger{width:170px}
+
+  .schedule-toolbar{
+    flex-wrap:wrap;
+    align-items:end
+  }
+  .schedule-toolbar>.button{margin-left:0}
+  .schedule-toolbar label{min-width:min(260px,100%)}
+  .schedule-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .schedule-layout{grid-template-columns:1fr}
+  .schedule-side{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .schedule-row{
+    grid-template-columns:38px 88px minmax(0,1fr) 36px;
+    padding:9px
+  }
+  .schedule-time b{font-size:.95rem}
+  .schedule-main b{font-size:.84rem}
+}
+
+/* Density options from Release Center. */
+@media(min-width:961px) and (max-width:1320px){
+  body[data-medium-density="roomy"] .view-stack{padding-inline:28px}
+  body[data-medium-density="roomy"] .schedule-row{padding:13px}
+  body[data-medium-density="dense"] .view-stack{padding:16px 16px 90px}
+  body[data-medium-density="dense"] .view-intro{margin-bottom:14px}
+  body[data-medium-density="dense"] .view-intro h1{font-size:2.65rem}
+  body[data-medium-density="dense"] .schedule-row{padding:7px;border-radius:14px}
+  body[data-medium-density="dense"] .schedule-list{gap:6px}
+  body[data-medium-density="dense"] .schedule-metrics article{padding:12px}
+}
+
+body[data-shell-mode="mobile"] .sidebar.collapsed{width:min(330px,88vw)}
+body[data-shell-mode="mobile"] .sidebar.collapsed .nav-group-label{display:block}
+
+/* Keep wide layouts readable instead of stretching endlessly. */
+@media(min-width:1681px){
+  .view-stack{padding-inline:36px}
+}
+
+/* Better toolbar wrapping and card stability across all widths. */
+.schedule-toolbar>*{min-width:0}
+.schedule-main{min-width:0}
+.schedule-main b,.schedule-main small{
+  overflow-wrap:anywhere
+}
+.schedule-row{min-width:0}
+.schedule-metrics article{min-width:0}
+.schedule-metrics strong{font-variant-numeric:tabular-nums}
+
+/* First-run fit notice. */
+.shell-fit-notice{
+  position:fixed;
+  z-index:4600;
+  left:calc(var(--sidebar-compact) + 18px);
+  bottom:18px;
+  width:min(430px,calc(100vw - var(--sidebar-compact) - 36px));
+  display:grid;
+  grid-template-columns:38px 1fr 30px;
+  gap:10px;
+  align-items:center;
+  padding:12px;
+  border:1px solid rgba(71,218,255,.24);
+  border-radius:16px;
+  background:rgba(14,11,18,.96);
+  box-shadow:0 24px 70px rgba(0,0,0,.45);
+  opacity:0;
+  transform:translateY(18px);
+  pointer-events:none;
+  transition:.22s ease
+}
+.shell-fit-notice.open{opacity:1;transform:none;pointer-events:auto}
+.shell-fit-notice>span{
+  width:36px;height:36px;display:grid;place-items:center;border-radius:11px;
+  background:rgba(71,218,255,.09);color:var(--cyan)
+}
+.shell-fit-notice>div{display:grid;gap:2px}
+.shell-fit-notice b{font-size:.68rem}
+.shell-fit-notice small{color:var(--muted);font-size:.56rem;line-height:1.4}
+.shell-fit-notice button{
+  width:28px;height:28px;border:0;border-radius:9px;
+  background:rgba(255,255,255,.05);color:#fff
+}
+
+.release-shell-readout{
+  display:grid!important;
+  gap:7px!important
+}
+.release-shell-readout>span{
+  color:var(--muted);font-size:.56rem;font-weight:900;text-transform:uppercase;letter-spacing:.07em
+}
+.release-shell-readout>div{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.025)
+}
+.release-shell-readout strong{font-size:.77rem}
+.release-shell-readout div span{color:var(--cyan);font-size:.58rem;text-transform:capitalize}
+.release-shell-readout small{color:var(--muted);font-size:.55rem;line-height:1.4}
+
+.diagnostic-stats{grid-template-columns:repeat(3,1fr)}
+
+body[data-connection="offline"] .save-state i{
+  background:var(--yellow);
+  box-shadow:0 0 12px rgba(255,197,93,.35)
+}
+
+@media(max-width:960px){
+  .sidebar.collapsed:hover,
+  .sidebar.collapsed:focus-within{width:min(330px,88vw);box-shadow:none}
+  .shell-fit-notice{display:none}
+  .schedule-side{grid-template-columns:1fr}
+}
+@media(max-width:720px){
+  .schedule-metrics{grid-template-columns:1fr 1fr}
+  .schedule-toolbar{padding:12px}
+  .schedule-toolbar label{width:100%;min-width:0}
+  .segmented-control{width:100%}
+  .segmented-control button{flex:1}
+  .schedule-row{grid-template-columns:34px 76px minmax(0,1fr)}
+  .schedule-row>*:last-child{display:none}
+  .diagnostic-stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:430px){
+  .schedule-metrics{grid-template-columns:1fr}
+  .schedule-row{grid-template-columns:30px 68px minmax(0,1fr)}
+}

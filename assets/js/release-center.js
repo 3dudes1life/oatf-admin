@@ -10,7 +10,7 @@
   const esc = UI.esc;
   const now = () => Store.nowISO();
   const REQUIRED_VIEWS = ['today','mywork','fairs','talent','contacts','schedule','dayof','control','orchestration','oscenter','twin','stateengine','briefing','release'];
-  const REQUIRED_MODULES = ['OATFStore','OATFIntel','OATFUI','OATFKernel','OATFWorkflow','OATFTwin','OATFStateEngine'];
+  const REQUIRED_MODULES = ['OATFStore','OATFIntel','OATFUI','OATFKernel','OATFWorkflow','OATFTwin','OATFStateEngine','OATFShell'];
   const COLLECTIONS = ['fairs','contacts','talent','tasks','schedules','deadlines','files','notes','issues','handoffs','scenarios','decisions','stateCaptures','changeSets','incidents','packageHistory','spaces','activity'];
   const runtimeErrors = [];
   let lastResults = [];
@@ -52,7 +52,10 @@
       releaseTestLastRun:'',
       releaseTestPassCount:0,
       releaseTestFailCount:0,
-      releaseCandidateAccepted:false
+      releaseCandidateAccepted:false,
+      sidebarBehavior:'auto',
+      mediumDesktopDensity:'balanced',
+      shellTourDismissed:false
     };
     Object.entries(defaults).forEach(([key,value])=>{
       if(p[key]===undefined){p[key]=value;changed=true;}
@@ -151,7 +154,7 @@
 
   async function runTests({manual=true}={}){
     const syncTests=[
-      {id:'version',label:'Release storage version',run:()=>({pass:Store.STORAGE_KEY==='oatf-os-production-v010',detail:`Active key: ${Store.STORAGE_KEY}`})},
+      {id:'version',label:'Release storage version',run:()=>({pass:Store.STORAGE_KEY==='oatf-os-production-v011',detail:`Active key: ${Store.STORAGE_KEY}`})},
       {id:'portal',label:'Production permission boundary',run:()=>({pass:Store.state.meta?.portal==='production',detail:'Workspace is explicitly scoped to Production.'})},
       {id:'admin-boundary',label:'Admin data separation',run:exportBoundaryTest},
       {id:'views',label:'Required application views',run:()=>{
@@ -161,6 +164,11 @@
       {id:'modules',label:'Application module availability',run:()=>{
         const missing=REQUIRED_MODULES.filter(module=>!window[module]);
         return {pass:missing.length===0,detail:missing.length?`Missing modules: ${missing.join(', ')}`:`${REQUIRED_MODULES.length} application modules loaded.`};
+      }},
+      {id:'responsive-shell',label:'Responsive application shell',run:()=>{
+        const mode=window.OATFShell?.effectiveMode?.();
+        const labels=[...document.querySelectorAll('.nav-link')].every(button=>button.dataset.navLabel);
+        return {pass:Boolean(mode&&labels),detail:mode?`${mode} shell active at ${window.innerWidth}×${window.innerHeight}.`:'Responsive shell did not initialize.'};
       }},
       {id:'ids',label:'Unique record IDs',run:uniqueIdsTest},
       {id:'references',label:'Connected-record integrity',run:referencesTest},
@@ -247,7 +255,7 @@
     const url=URL.createObjectURL(blob);
     const anchor=document.createElement('a');
     anchor.href=url;
-    anchor.download=`oatf-os-production-v010-backup-${new Date().toISOString().slice(0,10)}.json`;
+    anchor.download=`oatf-os-production-v011-backup-${new Date().toISOString().slice(0,10)}.json`;
     anchor.click();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
     Store.state.preferences.lastBackup=now();
@@ -261,7 +269,7 @@
     const decision=releaseDecision();
     const results=lastResults.length?lastResults:[];
     const lines=[
-      'OATF OS Production V0.10 — Release Candidate Report',
+      'OATF OS Production V0.11 — Release Candidate Report',
       `Generated: ${new Date().toLocaleString()}`,
       `Decision: ${decision.status}`,
       `Readiness score: ${releaseScore()}%`,
@@ -291,7 +299,7 @@
     const url=URL.createObjectURL(blob);
     const anchor=document.createElement('a');
     anchor.href=url;
-    anchor.download=`oatf-os-v010-release-report-${new Date().toISOString().slice(0,10)}.txt`;
+    anchor.download=`oatf-os-v011-release-report-${new Date().toISOString().slice(0,10)}.txt`;
     anchor.click();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
     UI.toast('Release report downloaded','The report contains no Admin-only information.');
@@ -334,14 +342,18 @@
 
   function appearancePanel(){
     const p=Store.state.preferences;
+    const shellMode=window.OATFShell?.effectiveMode?.()||'loading';
     return `<article class="release-panel appearance-panel">
-      <div class="release-panel-head"><div><span class="eyebrow">Accessibility and focus</span><h3>Experience Controls</h3></div><span class="release-chip">Saved locally</span></div>
+      <div class="release-panel-head"><div><span class="eyebrow">Accessibility and display fit</span><h3>Experience Controls</h3></div><span class="release-chip">Saved locally</span></div>
       <div class="appearance-grid">
-        <label><span>Navigation</span><select id="releaseNavigationMode"><option value="full"${p.navigationMode==='full'?' selected':''}>Full OS</option><option value="simple"${p.navigationMode==='simple'?' selected':''}>Simple Production</option></select><small>Simple mode hides advanced operations and system screens from the sidebar.</small></label>
+        <label><span>Navigation contents</span><select id="releaseNavigationMode"><option value="full"${p.navigationMode==='full'?' selected':''}>Full OS</option><option value="simple"${p.navigationMode==='simple'?' selected':''}>Simple Production</option></select><small>Simple mode hides advanced operations and system screens from the sidebar.</small></label>
+        <label><span>Sidebar fit</span><select id="releaseSidebarBehavior"><option value="auto"${p.sidebarBehavior==='auto'?' selected':''}>Auto — recommended</option><option value="full"${p.sidebarBehavior==='full'?' selected':''}>Always full</option><option value="compact"${p.sidebarBehavior==='compact'?' selected':''}>Always compact</option></select><small>Auto uses full navigation on wide screens, an icon rail on medium screens, and a drawer on mobile.</small></label>
+        <label><span>Medium-screen density</span><select id="releaseMediumDensity"><option value="roomy"${p.mediumDesktopDensity==='roomy'?' selected':''}>Roomy</option><option value="balanced"${p.mediumDesktopDensity==='balanced'?' selected':''}>Balanced</option><option value="dense"${p.mediumDesktopDensity==='dense'?' selected':''}>Dense</option></select><small>Tunes spacing and Run of Show layout on laptop and windowed desktop sizes.</small></label>
         <label><span>Text size</span><select id="releaseTextScale"><option value="compact"${p.textScale==='compact'?' selected':''}>Compact</option><option value="normal"${p.textScale==='normal'?' selected':''}>Normal</option><option value="large"${p.textScale==='large'?' selected':''}>Large</option></select><small>Changes interface text without altering saved records.</small></label>
         <label class="release-toggle"><div><b>Reduce motion</b><small>Minimize transitions and smooth scrolling.</small></div><input type="checkbox" id="releaseReducedMotion"${p.reducedMotion?' checked':''}></label>
         <label class="release-toggle"><div><b>High contrast</b><small>Strengthen borders, text, and focus states.</small></div><input type="checkbox" id="releaseHighContrast"${p.highContrast?' checked':''}></label>
         <label class="release-toggle"><div><b>Visible focus outlines</b><small>Recommended for keyboard and switch navigation.</small></div><input type="checkbox" id="releaseFocusOutlines"${p.focusOutlines!==false?' checked':''}></label>
+        <div class="release-shell-readout"><span>Current display fit</span><div id="shellDiagnostic"><strong>${window.innerWidth}×${window.innerHeight}</strong><span>${shellMode} shell</span></div><small>Hover the compact rail to temporarily reveal labels without moving the workspace.</small></div>
       </div>
     </article>`;
   }
@@ -364,10 +376,10 @@
     return `<article class="release-panel diagnostics-panel">
       <div class="release-panel-head"><div><span class="eyebrow">Local runtime health</span><h3>Diagnostics</h3></div><span class="release-chip ${runtimeErrors.length?'danger':'safe'}">${runtimeErrors.length?'Attention':'Healthy'}</span></div>
       <div class="diagnostic-stats">
-        <div><strong>0.10</strong><span>Release Candidate</span></div>
+        <div><strong>0.11</strong><span>Release Candidate</span></div>
         <div><strong>${counts}</strong><span>Local records</span></div>
         <div><strong>${Math.max(1,Math.round(exportSize/1024))} KB</strong><span>Workspace export</span></div>
-        <div><strong>${runtimeErrors.length}</strong><span>Runtime errors</span></div>
+        <div><strong>${runtimeErrors.length}</strong><span>Runtime errors</span></div><div><strong>${window.innerWidth}×${window.innerHeight}</strong><span>Viewport</span></div><div><strong id="connectionStatus">${navigator.onLine?'Online':'Offline'}</strong><span>Connection</span></div>
       </div>
       <div class="error-console">${runtimeErrors.length?runtimeErrors.map(error=>`<article><span>!</span><div><b>${esc(error.message)}</b><small>${esc(error.source||'Application')} ${error.line?`· line ${error.line}`:''} · ${esc(Intel.formatTimeAgo(error.time))}</small></div></article>`).join(''):`<div class="release-empty compact"><b>No runtime errors captured.</b><span>The monitor resets when this browser session closes.</span></div>`}</div>
     </article>`;
@@ -400,7 +412,7 @@
     const decision=releaseDecision();
     return `<section class="release-hero">
       <div>
-        <span class="eyebrow">V0.10 Release Candidate</span>
+        <span class="eyebrow">V0.11 Release Candidate</span>
         <h1>Stop adding features. Prove the operating system.</h1>
         <p>This release focuses on clarity, setup, testing, accessibility, boundaries, migration safety, and deployment readiness.</p>
         <div class="release-actions"><button class="button primary" data-release-tests>Run Release Tests</button><button class="button ghost" data-release-backup>Export Backup</button><button class="button ghost" data-download-release-report>Download Report</button></div>
@@ -481,6 +493,8 @@
   document.addEventListener('change',event=>{
     const p=Store.state.preferences;
     if(event.target?.id==='releaseNavigationMode'){p.navigationMode=event.target.value;Store.save();applyAppearance();render();return;}
+    if(event.target?.id==='releaseSidebarBehavior'){p.sidebarBehavior=event.target.value;Store.save({immediate:true});window.OATFShell?.sync?.({announce:true});render();return;}
+    if(event.target?.id==='releaseMediumDensity'){p.mediumDesktopDensity=event.target.value;Store.save({immediate:true});window.OATFShell?.sync?.();render();return;}
     if(event.target?.id==='releaseTextScale'){p.textScale=event.target.value;Store.save();applyAppearance();return;}
     if(event.target?.id==='releaseReducedMotion'){p.reducedMotion=event.target.checked;Store.save();applyAppearance();return;}
     if(event.target?.id==='releaseHighContrast'){p.highContrast=event.target.checked;Store.save();applyAppearance();return;}

@@ -29,3 +29,14 @@ Use:
 Do not put Admin passwords, budgets, revenue, payments, private agreements, negotiations, insurance, or executive-only notes into this Production build.
 
 A future Admin portal must use backend-enforced authentication. A password embedded in static JavaScript is not secure.
+
+
+## V0.11 display validation
+
+After deployment, test these viewport classes:
+
+- Wide desktop: 1321px and above — full sidebar in Auto mode
+- Medium desktop/windowed browser: 961px–1320px — compact icon rail in Auto mode
+- Mobile/tablet portrait: 960px and below — drawer and mobile dock
+
+In Release Center, test Auto, Always Full, and Always Compact sidebar settings. Also verify the Run of Show at medium desktop width.
