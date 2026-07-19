@@ -1,5 +1,5 @@
-const CACHE = 'oatf-os-production-v007';
-const ASSETS = ['./','index.html','assets/css/app.css','assets/js/store.js','assets/js/intelligence.js','assets/js/ui.js','assets/js/kernel.js','assets/js/app.js','assets/js/system.js','assets/js/workflow.js','assets/icons/icon.svg','manifest.webmanifest'];
+const CACHE = 'oatf-os-production-v008';
+const ASSETS = ['./','index.html','assets/css/app.css','assets/js/store.js','assets/js/intelligence.js','assets/js/ui.js','assets/js/kernel.js','assets/js/app.js','assets/js/system.js','assets/js/workflow.js','assets/js/twin.js','assets/icons/icon.svg','manifest.webmanifest'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))));
 self.addEventListener('fetch', event => {

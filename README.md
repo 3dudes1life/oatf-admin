@@ -176,3 +176,99 @@ Universal search now understands:
 - Change Journal
 
 No AI, budgets, fair payments, private agreements, negotiations, Admin credentials, or executive-only notes are included.
+
+
+## V0.08 — Production Digital Twin
+
+V0.08 adds a non-destructive modeling layer to OATF OS.
+
+### Twin Lab
+
+Production can simulate:
+
+- performer cancellation
+- schedule delay
+- stage-time reduction
+- missing performer materials
+- unavailable contacts
+- compressed deadlines
+
+Every simulation calculates:
+
+- readiness before and after
+- schedule-warning changes
+- affected connected records
+- active-work impact
+- recommended production response
+
+Scenarios may be saved without changing live data. Committing a scenario creates a checkpoint first, applies only the approved changes, and records the decision and rationale.
+
+### Production Spaces
+
+Spaces preserve operating context:
+
+- view
+- focus fair
+- operating mode
+- Control Center lens
+
+The release includes Production Command, Talent Lock, Live Stage, and Closeout Spaces. Custom Spaces can also be saved locally.
+
+### Production Horizon
+
+Forecasts 7-, 14-, and 30-day workload using:
+
+- task estimates
+- high-impact work
+- connected deadlines
+- modeled workload pressure
+
+### Relationship Map
+
+A fair-centered relationship view connects:
+
+- talent
+- tasks
+- contacts
+- run-of-show blocks
+- issues
+- files
+
+Each connected record receives a simple local health signal.
+
+### Bulk Deck
+
+Production can select multiple tasks and:
+
+- start them
+- complete them
+- shift due dates by one or seven days
+- assign them to Production
+
+A checkpoint is created before bulk updates.
+
+### Decision Log
+
+Production decisions now preserve:
+
+- the decision
+- rationale
+- fair
+- status
+- timestamp
+
+Committed Twin Lab scenarios automatically create decision records.
+
+### Twin commands
+
+Universal search now understands:
+
+- open Twin Lab
+- simulate performer cancellation
+- simulate schedule delay
+- simulate stage-time reduction
+- relationship map
+- bulk deck
+- decision log
+
+No AI, budgets, revenue, fair payments, private agreements, negotiations, Admin credentials, or executive-only notes are included.

@@ -1,7 +1,7 @@
 {
   "name": "OATF OS Production",
   "short_name": "OATF OS",
-  "description": "Local-first production OS with deterministic automations, smart inbox, focus modes, revision history, recovery, and workflow orchestration.",
+  "description": "Local-first production digital twin with scenario simulation, impact analysis, Spaces, bulk operations, relationship mapping, decision memory, automations, and workflow orchestration.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#09070d",

@@ -1,17 +1,17 @@
 (() => {
   'use strict';
 
-  const STORAGE_KEY = 'oatf-os-production-v007';
-  const LEGACY_KEYS = ['oatf-os-production-v006','oatf-os-production-v005','oatf-os-production-v004','oatf-os-production-v003','oatf-admin-v002','oatf-admin-v001'];
+  const STORAGE_KEY = 'oatf-os-production-v008';
+  const LEGACY_KEYS = ['oatf-os-production-v007','oatf-os-production-v006','oatf-os-production-v005','oatf-os-production-v004','oatf-os-production-v003','oatf-admin-v002','oatf-admin-v001'];
   const SESSION_KEY = 'oatf-os-session';
 
   const nowISO = () => new Date().toISOString();
   const uid = prefix => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
 
   const seed = {
-    meta:{version:'0.07',portal:'production',createdAt:'2026-07-18T16:00:00-07:00'},
+    meta:{version:'0.08',portal:'production',createdAt:'2026-07-18T16:00:00-07:00'},
     currentUser:'Production',
-    preferences:{lastView:'today',lastRecord:null,sidebarCollapsed:false,lastSearch:'',dismissedNotifications:[],scheduleFairId:'fair-oc',scheduleMode:'internal',dayOfFairId:'fair-oc',dayOfSlotId:'schedule-oc-gss',dayOfChecks:{},selectedLens:'exceptions',reportFairId:'fair-oc',reportType:'production-brief',lastCheckpoint:'',lastBackup:'',systemDensity:'comfortable',workflowFairId:'fair-oc',workflowPhase:'all',workflowMode:'orchestration',focusMode:'planning',osFairId:'fair-oc',automationAutoRun:true,historyFairId:'all',inboxFilter:'open'},
+    preferences:{lastView:'today',lastRecord:null,sidebarCollapsed:false,lastSearch:'',dismissedNotifications:[],scheduleFairId:'fair-oc',scheduleMode:'internal',dayOfFairId:'fair-oc',dayOfSlotId:'schedule-oc-gss',dayOfChecks:{},selectedLens:'exceptions',reportFairId:'fair-oc',reportType:'production-brief',lastCheckpoint:'',lastBackup:'',systemDensity:'comfortable',workflowFairId:'fair-oc',workflowPhase:'all',workflowMode:'orchestration',focusMode:'planning',osFairId:'fair-oc',automationAutoRun:true,historyFairId:'all',inboxFilter:'open',twinFairId:'fair-oc',twinScenarioType:'performer-cancel',twinHorizon:14,activeSpaceId:'space-command',relationshipDepth:'focused'},
     recentViewed:[],
     fairs:[
       {id:'fair-riv',name:'Riverside County Fair',short:'Riverside',code:'RIV',date:'2027-02-20',location:'Indio, CA',venue:'National Date Festival',stage:'Main Stage',status:'On track',summary:'Early-season production workspace for Riverside County Fair.',accent:'#ff7b56',favoriteBy:['William'],createdAt:'2026-07-10T09:00:00-07:00',updatedAt:'2026-07-17T13:30:00-07:00'},
@@ -77,6 +77,16 @@
       {id:'handoff-seed-1',fairId:'fair-oc',author:'Production',shift:'Planning',summary:'OC workspace is waiting on final parking and Summer Daze music.',blockers:'Summer Daze music and parking confirmation.',decisions:'Keep the public schedule unchanged until performer readiness is complete.',nextAction:'Follow up on missing materials and confirm backstage arrival flow.',createdAt:'2026-07-18T15:50:00-07:00'}
     ],
     playbookRuns:[],
+    scenarios:[],
+    decisions:[
+      {id:'decision-seed-1',fairId:'fair-oc',title:'Protect the public schedule until materials lock',decision:'Do not publish another OC schedule revision until missing music and parking information are resolved.',rationale:'Publishing before production readiness creates avoidable changes for performers and fair partners.',status:'Active',author:'Production',createdAt:'2026-07-18T15:55:00-07:00',updatedAt:'2026-07-18T15:55:00-07:00'}
+    ],
+    spaces:[
+      {id:'space-command',name:'Production Command',icon:'◈',system:true,view:'today',fairId:'',mode:'planning',lens:'exceptions',description:'Season-wide priorities, exceptions, and next fair readiness.'},
+      {id:'space-talent-lock',name:'Talent Lock',icon:'◉',system:true,view:'talent',fairId:'fair-oc',mode:'lock',lens:'missing-materials',description:'Contracted talent, materials, contacts, and readiness exceptions.'},
+      {id:'space-live',name:'Live Stage',icon:'⚡',system:true,view:'dayof',fairId:'fair-oc',mode:'dayof',lens:'open-issues',description:'Current act, next act, check-in, issues, and stage handoff.'},
+      {id:'space-closeout',name:'Closeout',icon:'✓',system:true,view:'orchestration',fairId:'fair-oc',mode:'closeout',lens:'open-issues',description:'Issue resolution, handoffs, notes, and production memory.'}
+    ],
     activity:[
       {id:'act-1',actor:'Spencer',action:'moved Golden State Squares to Contracted.',entityType:'talent',entityId:'talent-gss',fairId:'fair-oc',timestamp:'2026-07-18T15:42:00-07:00'},
       {id:'act-2',actor:'William',action:'approved the OC stage backdrop record.',entityType:'file',entityId:'file-backdrop',fairId:'fair-oc',timestamp:'2026-07-18T14:45:00-07:00'},
@@ -137,13 +147,16 @@
 
   function upgradeState(input){
     const upgraded = input && typeof input === 'object' ? input : clone(seed);
-    upgraded.meta = {...(upgraded.meta || {}),version:'0.07',portal:'production'};
+    upgraded.meta = {...(upgraded.meta || {}),version:'0.08',portal:'production'};
     upgraded.currentUser = 'Production';
     upgraded.preferences = {...seed.preferences,...(upgraded.preferences || {})};
     upgraded.recentViewed = Array.isArray(upgraded.recentViewed) ? upgraded.recentViewed : [];
     upgraded.schedules = Array.isArray(upgraded.schedules) && upgraded.schedules.length ? upgraded.schedules : clone(seed.schedules);
     upgraded.handoffs = Array.isArray(upgraded.handoffs) ? upgraded.handoffs : clone(seed.handoffs || []);
     upgraded.playbookRuns = Array.isArray(upgraded.playbookRuns) ? upgraded.playbookRuns : [];
+    upgraded.scenarios = Array.isArray(upgraded.scenarios) ? upgraded.scenarios : [];
+    upgraded.decisions = Array.isArray(upgraded.decisions) ? upgraded.decisions : clone(seed.decisions || []);
+    upgraded.spaces = Array.isArray(upgraded.spaces) && upgraded.spaces.length ? upgraded.spaces : clone(seed.spaces || []);
     upgraded.tasks = Array.isArray(upgraded.tasks) ? upgraded.tasks.map(task => ({
       dependsOnTaskId:task.dependsOnTaskId || '',
       phase:task.phase || '',
@@ -209,7 +222,7 @@
   }
 
   function getCollection(type){
-    const map = {fair:'fairs',contact:'contacts',talent:'talent',task:'tasks',schedule:'schedules',deadline:'deadlines',file:'files',note:'notes',issue:'issues',handoff:'handoffs',activity:'activity'};
+    const map = {fair:'fairs',contact:'contacts',talent:'talent',task:'tasks',schedule:'schedules',deadline:'deadlines',file:'files',note:'notes',issue:'issues',handoff:'handoffs',scenario:'scenarios',decision:'decisions',space:'spaces',activity:'activity'};
     return state[map[type] || type];
   }
   function get(type,id){ return getCollection(type)?.find(item => item.id === id) || null; }
