@@ -1,4 +1,4 @@
 OATF OS — Production
-Version: 0.08
-Release: Production Digital Twin
+Version: 0.09
+Release: Production State Engine
 Portal: Shared Production workspace

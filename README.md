@@ -272,3 +272,84 @@ Universal search now understands:
 - decision log
 
 No AI, budgets, revenue, fair payments, private agreements, negotiations, Admin credentials, or executive-only notes are included.
+
+
+## V0.09 — Production State Engine
+
+V0.09 makes local Production data portable, comparable, transactional, and reversible.
+
+### State Captures and Visual Diff
+
+- capture a fair and every connected record
+- generate a stable state fingerprint
+- compare current state with any capture
+- see created, updated, and deleted records
+- restore one record or the complete captured state
+- automatically create safety checkpoints before restores
+
+### Transactional Change Sets
+
+Stage several Production operations before anything changes:
+
+- move work into progress
+- complete work
+- shift deadlines
+- reassign owners
+- change priority and operational impact
+
+The OS calculates the exact record-level diff before commit and applies the whole transaction after creating a checkpoint.
+
+### Fair Package Exchange
+
+Export a portable fair package containing:
+
+- fair profile
+- contacts
+- talent
+- tasks
+- run of show
+- deadlines
+- files
+- notes
+- issues
+- handoffs
+- incidents
+- decisions
+
+Incoming packages are analyzed without changing local data.
+
+Conflict strategies:
+
+- keep newest record
+- always keep local
+- always use incoming
+
+Every import and export is written to the package audit history.
+
+### Incident Replay
+
+Production can timestamp:
+
+- decisions
+- delays
+- performer events
+- issues
+- stage events
+- handoffs
+- resolutions
+
+The timeline can be replayed chronologically and copied as a production record.
+
+### State commands
+
+Universal search now understands:
+
+- open State Engine
+- capture state
+- state diff
+- change set
+- export fair package
+- merge package
+- incident replay
+
+No AI, budgets, revenue, fair payments, private agreements, negotiations, Admin credentials, or executive-only notes are included.
