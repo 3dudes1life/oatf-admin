@@ -90,3 +90,89 @@ Universal search now understands deterministic commands for:
 - handoffs
 
 No AI, financial information, private agreements, executive notes, or Admin credentials are included.
+
+
+## V0.07 — Local Production OS Kernel
+
+V0.07 adds system behavior on top of the production records and orchestration engine.
+
+### OS Center
+
+A dedicated operating-system workspace with:
+
+- smart inbox
+- deterministic local automations
+- operating modes
+- reversible change journal
+- Data Doctor
+- storage and recovery health
+
+### Smart Inbox
+
+The OS creates deduplicated local signals for:
+
+- critically overdue work
+- newly unlocked task dependencies
+- missing contracted-talent materials
+- due and overdue follow-ups
+- run-of-show risks
+- stale active work
+- unresolved high-severity issues
+- missing handoff continuity
+
+Inbox items can be opened, snoozed until tomorrow, acknowledged, or converted into Production tasks.
+
+### Automation rules
+
+Every rule can be:
+
+- enabled or disabled
+- set to Inbox Only
+- set to Inbox + Task
+- run manually
+- evaluated while the OS is being used
+
+This is deterministic local logic, not AI and not a background cloud process.
+
+### Operating modes
+
+- Planning
+- Production Lock
+- Day-of
+- Closeout
+
+Each mode changes the workspace focus, density, and starting screen.
+
+### Change Journal
+
+- records creations, edits, deletions, and restores
+- keeps up to 250 local record versions
+- supports one-click rollback
+- filters history by fair
+
+### Data Doctor
+
+The OS checks for:
+
+- broken task dependencies
+- invalid recent-item references
+- duplicate inbox entries
+- orphaned fair references
+- duplicate record IDs
+
+Safe repair never deletes production records.
+
+### OS commands
+
+Universal search now understands:
+
+- open OS Center
+- run automations
+- Planning Mode
+- Production Lock
+- Day-of Mode
+- Closeout Mode
+- Data Doctor
+- Change Journal
+
+No AI, budgets, fair payments, private agreements, negotiations, Admin credentials, or executive-only notes are included.

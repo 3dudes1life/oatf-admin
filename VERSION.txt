@@ -1,4 +1,4 @@
 OATF OS — Production
-Version: 0.06
-Release: Workflow Orchestration Engine
+Version: 0.07
+Release: Local Production OS Kernel
 Portal: Shared Production workspace

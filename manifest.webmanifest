@@ -1,7 +1,7 @@
 {
   "name": "OATF OS Production",
   "short_name": "OATF OS",
-  "description": "Local-first fair production orchestration, readiness gates, playbooks, dependencies, and handoffs.",
+  "description": "Local-first production OS with deterministic automations, smart inbox, focus modes, revision history, recovery, and workflow orchestration.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#09070d",

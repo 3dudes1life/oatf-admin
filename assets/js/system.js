@@ -5,7 +5,11 @@
   const UI = window.OATFUI;
   if (!Store || !Intel || !UI) return;
   const $ = s => document.querySelector(s);
-  const SNAPSHOT_KEY = 'oatf-os-production-v005-snapshots';
+  const SNAPSHOT_KEY = 'oatf-os-production-v007-snapshots';
+  if (!localStorage.getItem(SNAPSHOT_KEY)){
+    const legacySnapshots = localStorage.getItem('oatf-os-production-v005-snapshots') || localStorage.getItem('oatf-os-production-v006-snapshots');
+    if (legacySnapshots) localStorage.setItem(SNAPSHOT_KEY,legacySnapshots);
+  }
   const todayISO = () => new Date().toISOString().slice(0,10);
   const addDays = (days) => { const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10); };
   const fair = id => Store.get('fair',id);
